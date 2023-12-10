@@ -1,0 +1,394 @@
+
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head><script src="color-modes.js"></script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.118.2">
+    <title>Signin Template · Bootstrap v5.3</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/sign-in/">
+
+    
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <!-- Favicons -->
+<link rel="apple-touch-icon" href="/docs/5.3/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
+<link rel="icon" href="/docs/5.3/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/docs/5.3/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
+<link rel="manifest" href="/docs/5.3/assets/img/favicons/manifest.json">
+<link rel="mask-icon" href="/docs/5.3/assets/img/favicons/safari-pinned-tab.svg" color="#712cf9">
+<link rel="icon" href="/docs/5.3/assets/img/favicons/favicon.ico">
+<meta name="theme-color" content="#712cf9">
+
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+
+      .b-example-divider {
+        width: 100%;
+        height: 3rem;
+        background-color: rgba(0, 0, 0, .1);
+        border: solid rgba(0, 0, 0, .15);
+        border-width: 1px 0;
+        box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+      }
+
+      .b-example-vr {
+        flex-shrink: 0;
+        width: 1.5rem;
+        height: 100vh;
+      }
+
+      .bi {
+        vertical-align: -.125em;
+        fill: currentColor;
+      }
+
+      .nav-scroller {
+        position: relative;
+        z-index: 2;
+        height: 2.75rem;
+        overflow-y: hidden;
+      }
+
+      .nav-scroller .nav {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-bottom: 1rem;
+        margin-top: -1px;
+        overflow-x: auto;
+        text-align: center;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .btn-bd-primary {
+        --bd-violet-bg: #712cf9;
+        --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+
+        --bs-btn-font-weight: 600;
+        --bs-btn-color: var(--bs-white);
+        --bs-btn-bg: var(--bd-violet-bg);
+        --bs-btn-border-color: var(--bd-violet-bg);
+        --bs-btn-hover-color: var(--bs-white);
+        --bs-btn-hover-bg: #6528e0;
+        --bs-btn-hover-border-color: #6528e0;
+        --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+        --bs-btn-active-color: var(--bs-btn-hover-color);
+        --bs-btn-active-bg: #5a23c8;
+        --bs-btn-active-border-color: #5a23c8;
+      }
+
+      .bd-mode-toggle {
+        z-index: 1500;
+      }
+
+      .bd-mode-toggle .dropdown-menu .active .bi {
+        display: block !important;
+      }
+    </style>
+
+    
+    <!-- Custom styles for this template -->
+    <link href="sign-in.css" rel="stylesheet">
+  </head>
+  <body class="d-flex align-items-center py-4 bg-body-tertiary">
+    <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+      <symbol id="check2" viewBox="0 0 16 16">
+        <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+      </symbol>
+      <symbol id="circle-half" viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 0 8 1v14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z"/>
+      </symbol>
+      <symbol id="moon-stars-fill" viewBox="0 0 16 16">
+        <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
+        <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+      </symbol>
+      <symbol id="sun-fill" viewBox="0 0 16 16">
+        <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+      </symbol>
+    </svg>
+
+    <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
+      <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
+              id="bd-theme"
+              type="button"
+              aria-expanded="false"
+              data-bs-toggle="dropdown"
+              aria-label="Toggle theme (auto)">
+        <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#circle-half"></use></svg>
+        <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+        <li>
+          <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+            <svg class="bi me-2 opacity-50 theme-icon" width="1em" height="1em"><use href="#sun-fill"></use></svg>
+            Светлая
+            <svg class="bi ms-auto d-none" width="1em" height="1em"><use href="#check2"></use></svg>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+            <svg class="bi me-2 opacity-50 theme-icon" width="1em" height="1em"><use href="#moon-stars-fill"></use></svg>
+            Тёмная
+            <svg class="bi ms-auto d-none" width="1em" height="1em"><use href="#check2"></use></svg>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
+            <svg class="bi me-2 opacity-50 theme-icon" width="1em" height="1em"><use href="#circle-half"></use></svg>
+            Авто
+            <svg class="bi ms-auto d-none" width="1em" height="1em"><use href="#check2"></use></svg>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    
+<main class="form-signin w-100 m-auto" id="profile_refresh_global">
+    <form id="authForm">
+        <img class="mb-0" src="profilum-logo.svg" alt="" width="300">
+        <h1 class="small text-muted pt-0 mb-3 fw-normal">для профориентации, верси 0.1 бета</h1>
+
+        <div class="alert alert-warning alert-dismissible" role="alert">
+            <h4 class="alert-heading">Добро пожаловать!</h4>
+            <p>Если ты здесь впервые, введи свою почту и придумай пароль.</p>
+            <hr>
+            <p class="mb-0">Тестовый аккаунт<br>
+            Логин: <code>test@test.ru</code><br>
+            Пароль: <code>1234</code>
+            </code></p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+        <div class="form-floating">
+            <input type="email" class="form-control" id="floatingInput" name="email" placeholder="name@example.com">
+            <label for="floatingInput">Эл. Почта</label>
+        </div>
+        <div class="form-floating">
+            <input type="password" class="form-control" id="floatingPassword" name="password" placeholder="Password">
+            <label for="floatingPassword">Пароль</label>
+        </div>
+
+        <div class="form-check text-start my-3">
+            <input class="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault">
+            <label class="form-check-label" for="flexCheckDefault">
+            запомнить меня
+            </label>
+        </div>
+        <button class="btn btn-primary bg-gradient w-100 py-2" type="button" id="submitButton">Вход</button>
+        <p class="mt-5 mb-3 text-body-secondary">&copy; 2023 ЛЦТ.Якутия</p>
+        <img class="mx-4" src="logo_ltc.svg" alt="" width="90">
+        <img class="mx-4" src="aim_lcty.svg" alt="" width="90">
+    </form>
+    <div class="w-100" id="loading" style="display:none;">
+        <img src="loading.gif" alt="Загрузка..." width="128"/>
+        <span class="ps-4 pt-5 lead">Загружаю...</span>
+    </div>
+    <div id="profile"style="display:none;">
+        <p class="lead">Не указан аккаунт для анализа</p>
+        <button class="btn btn-default shadow bg-gradient btn-lg" data-bs-toggle="modal" data-bs-target="#addLoginModal"><strong>+</strong> Добавить аккаунт</button>
+    </div>
+
+
+    <!-- Модальное окно Пользовательское соглашение -->
+    <div class="modal modal-dismissible" tabindex="-1" role="dialog" id="reqModal">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Пользовательское соглашение</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="lead">Будем использовать всё что найдём на тебя 😈<br><br>Хранить всю информацию на своих серверах вечно, наблюдать за тобой, учить тебя, чтобы в итоге поработить.<br>Вводи побольше данных о себе, так мои рекомендации по профориентации будут ещё точнее.<br><br><span class="small">Нажимая кнопку «Понятно» ты получишь доступ к уникальному сервису в обмен на душу</span></span></p>
+                    <button class="btn btn-success bg-gradient float-end ms-2" data-bs-dismiss="modal">Понятно</button>
+                    <button class="btn btn-link disabled float-end">Отказаться нельзя</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Модальное окно Добавление аккаунта -->
+    <div class="modal modal-dismissible" tabindex="-1" role="dialog" id="addLoginModal">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Новый аккаунт</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="lead">Введи username или id страницы</p>
+                    <form id="addLoginForm">
+                        <input type="text" name="username_to_watch" class="form-control" placeholder="123456">
+                    </form>
+                    <button class="btn btn-success bg-gradient float-end ms-2 mt-4" type="button" id="addLoginButton" data-bs-dismiss="modal">Анализ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+</main>
+<script src="bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<script>
+document.getElementById('submitButton').addEventListener('click', function() {
+    var form = document.getElementById('authForm');
+    var loading = document.getElementById('loading');
+    var profile = document.getElementById('profile');
+    var reqModal = new bootstrap.Modal(document.getElementById('reqModal'), {
+        keyboard: false,
+        backdrop: 'static'
+    });
+
+    // Добавляем задержку перед открытием модального окна
+    setTimeout(() => {
+        reqModal.show();
+    }, 2000); // Задержка в 2 секунды
+
+    // Замена формы на анимацию загрузки
+    form.style.display = 'none';
+    loading.style.display = 'block';
+
+    // Отправка запроса к API
+    fetch('/auth.php', {
+        method: 'POST',
+        body: new FormData(form)
+        // Дополнительные параметры запроса, если нужны
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Обработка ответа от API
+        console.log(data);
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+    })
+    .finally(() => {
+        // Убираем анимацию загрузки после минимум 1 секунды
+        setTimeout(() => {
+            loading.style.display = 'none';
+            profile.style.display = 'block';
+        }, 6000);
+    });
+});
+
+document.getElementById('addLoginButton').addEventListener('click', function(event) {
+    event.preventDefault(); // Предотвращаем стандартное поведение кнопки (перезагрузку страницы)
+
+    var addLoginForm = document.getElementById('addLoginForm');
+    var formData = new FormData(addLoginForm);
+    var loading = document.getElementById('loading');
+    var profile = document.getElementById('profile_refresh_global');
+    var profile_interface = document.getElementById('profile');
+    var addLoginModal = new bootstrap.Modal(document.getElementById('addLoginModal'), {
+        keyboard: false,
+        backdrop: 'static'
+    });
+
+    loading.style.display = 'block';
+    profile_interface.style.display = 'none';
+
+    function createUserInfoSection(userInfo) {
+        let userInfoHTML = '<div class="col-12 col-lg-4"><p class="lead">Информация о пользователе</p><ul class="list-group list-group-flush">';
+        if (userInfo) {
+            for (let key in userInfo) {
+                let value = userInfo[key];
+
+                // Проверяем, является ли ключ ссылкой на аватарку
+                if (key === 'Аватарка' && typeof value === 'string') {
+                    userInfoHTML += `<li class="list-group-item"><img src="${value}" alt="Аватарка" style="width: 100px; height: 100px;"></li>`;
+                } else if (key === 'Онлайн' && typeof value === 'string') {
+                    userInfoHTML += `<li class="list-group-item">${value}</li>`;
+                } else if (Array.isArray(value)) {
+                    // Обработка массива объектов (например, карьера)
+                    value = value.map(obj => JSON.stringify(obj)).join(', ');
+                    userInfoHTML += `<li class="list-group-item">${key}: ${value}</li>`;
+                } else {
+                    // Обработка простых свойств
+                    userInfoHTML += `<li class="list-group-item">${key}: ${value}</li>`;
+                }
+            }
+        } else {
+            userInfoHTML += '<li>Информация отсутствует.</li>';
+        }
+        userInfoHTML += '</ul></div>';
+        return userInfoHTML;
+    }
+
+
+    function createListSection(title, items, className) {
+        let listHTML = `<div class="${className}"><p class="lead">${title}</p><ul>`;
+
+        // Проверяем, является ли items массивом
+        if (Array.isArray(items) && items.length > 0) {
+            items.forEach(item => {
+                if (item.name && item.id) {
+                    listHTML += `<li>${item.name} (ID: ${item.id})</li>`;
+                } else {
+                    listHTML += `<li>${item}</li>`;
+                }
+            });
+        } else {
+            listHTML += `<li>${items}</li>`; // items не является массивом, выводим как есть
+        }
+
+        listHTML += '</ul></div>';
+        return listHTML;
+    }
+
+
+    
+    // Отправка запроса к API
+    fetch('/index.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+
+        let responseData = data; // Разбор JSON-ответа
+
+        // Создаем контейнер для всего содержимого с горизонтальной прокруткой
+        let contentHTML = '<div class="d-flex flex-row overflow-auto">';
+        contentHTML += createUserInfoSection(responseData.user_info);
+        contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4');
+        contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4');
+        contentHTML += '</div>';
+
+        // Очищаем и добавляем новое содержимое в profile_interface
+        profile_interface.innerHTML = contentHTML;
+
+        profile.classList.remove("form-signin");
+
+        // Скрываем анимацию загрузки и показываем profile_interface
+        loading.style.display = 'none';
+        profile_interface.style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+    });
+});
+
+
+</script>
+    </body>
+</html>
