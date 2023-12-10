@@ -10,6 +10,54 @@ $vk = new \VK\Client\VKApiClient();
 $username = !empty($_POST['username_to_watch']) ? $_POST['username_to_watch'] : 'sega_as'; // Замените на username пользователя
 $result = '';
 
+$categoriesKeywords = [
+    'Спорт' => ['футбол', 'баскетбол', 'волейбол'],
+    'Музыка' => ['концерт', 'рок', 'джаз', 'поп-музыка'],
+    'Технологии' => ['IT', 'компьютеры', 'новые технологии', '2SDP', 'Хабр'],
+    'Логика' => ['настольные игры', 'головоломки', 'шахматы'],
+    // Другие категории...
+];
+
+function getCategoryOfGroup($vk, $access_token, $groupId) {
+    global $categoriesKeywords;
+
+    try {
+        sleep(1);
+        $response = $vk->groups()->getById($access_token, [
+            'group_id' => $groupId,
+            'fields' => ['market', 'description', 'name']
+        ]);
+
+        if (!empty($response)) {
+            // Объединяем описание и название группы для поиска ключевых слов
+            $combinedText = '';
+            if (isset($response[0]['description'])) {
+                $combinedText .= $response[0]['description'] . ' ';
+            }
+            if (isset($response[0]['name'])) {
+                $combinedText .= $response[0]['name'];
+            }
+
+            $lowercaseCombinedText = mb_strtolower($combinedText, 'UTF-8');
+
+            foreach ($categoriesKeywords as $category => $keywords) {
+                foreach ($keywords as $keyword) {
+                    $lowercaseKeyword = mb_strtolower($keyword, 'UTF-8');
+                    if (strpos($lowercaseCombinedText, $lowercaseKeyword) !== false) {
+                        return $category;
+                    }
+                }
+            }
+        }
+
+        return 'Неизвестная категория';
+
+    } catch (Exception $e) {
+        exit('Ошибка при получении категории группы: ' . $e->getMessage());
+    }
+}
+
+
 try {
     // Определяем, является ли входное значение числовым ID или username
     if (is_numeric($username) || strpos($username, 'id') === 0) {
@@ -60,15 +108,47 @@ if (!empty($user_response)) {
         'count' => 100
     ]);
 
+    // Предполагаем, что $group_response['items'] содержит данные о группах
+    $categoriesCount = [];
+    $totalSubscriptions = count($group_response['items']);
+
     if (!empty($group_response['items'])) {
         $result['subscriptions'] = array();
+        $counter = 0; // Инициализируем счетчик
+
         foreach ($group_response['items'] as $group) {
+            $category = 'Неизвестная категория'; // Значение по умолчанию для категории
+
+            // Вызываем getCategoryOfGroup только для первых 10 групп
+            if ($counter < 10) {
+                $category = getCategoryOfGroup($vk, $access_token, $group['id']);
+            }
+
+            if (!isset($categoriesCount[$category])) {
+                $categoriesCount[$category] = 0;
+            }
+            $categoriesCount[$category]++;
+            
             // Сохраняем как название группы, так и её ID
             array_push($result['subscriptions'], array(
                 'name' => $group['name'],
-                'id' => $group['id']
+                'id' => $group['id'],
+                'category' => $category
             ));
+
+            $counter++; // Увеличиваем счетчик
         }
+
+
+        // Расчет процентного соотношения для каждой категории
+        $categoriesPercentage = [];
+        foreach ($categoriesCount as $category => $count) {
+            $categoriesPercentage[$category] = ($count / $totalSubscriptions) * 100;
+        }
+
+        // Добавление процентного соотношения к результату
+        $result['categoriesPercentage'] = $categoriesPercentage;
+
     } else {
         $result['subscriptions'] = "У пользователя нет подписок на группы.";
     }

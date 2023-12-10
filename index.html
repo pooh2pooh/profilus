@@ -266,7 +266,7 @@ document.getElementById('submitButton').addEventListener('click', function() {
     // Добавляем задержку перед открытием модального окна
     setTimeout(() => {
         reqModal.show();
-    }, 2000); // Задержка в 2 секунды
+    }, 1500); // Задержка в 2 секунды
 
     // Замена формы на анимацию загрузки
     form.style.display = 'none';
@@ -291,7 +291,7 @@ document.getElementById('submitButton').addEventListener('click', function() {
         setTimeout(() => {
             loading.style.display = 'none';
             profile.style.display = 'block';
-        }, 6000);
+        }, 2000);
     });
 });
 
@@ -311,7 +311,27 @@ document.getElementById('addLoginButton').addEventListener('click', function(eve
     loading.style.display = 'block';
     profile_interface.style.display = 'none';
 
-    function createUserInfoSection(userInfo) {
+    const generateRandomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16);
+
+    function createProgressBar(category, percentage) {
+        return `
+            <div class="progress" style="margin-bottom: 10px;">
+                <div class="progress-bar" role="progressbar" style="width: ${percentage}%; background-color: ${generateRandomColor()};" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
+                    ${category}: ${percentage.toFixed(2)}%
+                </div>
+            </div>
+        `;
+    }
+
+    function createCategoryProgressBars(categoriesPercentage) {
+        let barsHTML = '';
+        for (let category in categoriesPercentage) {
+            barsHTML += createProgressBar(category, categoriesPercentage[category]);
+        }
+        return barsHTML;
+    }
+
+    function createUserInfoSection(userInfo, categoriesPercentage) {
         let userInfoHTML = '<div class="col-12 col-lg-4"><p class="lead">Информация о пользователе</p><ul class="list-group list-group-flush">';
         if (userInfo) {
             for (let key in userInfo) {
@@ -334,7 +354,13 @@ document.getElementById('addLoginButton').addEventListener('click', function(eve
         } else {
             userInfoHTML += '<li>Информация отсутствует.</li>';
         }
-        userInfoHTML += '</ul></div>';
+        userInfoHTML += '</ul>';
+
+        // Добавляем прогресс-бары категорий
+        userInfoHTML += '<h5 class="mt-3">Категории подписок</h5>';
+        userInfoHTML += createCategoryProgressBars(categoriesPercentage);
+
+        userInfoHTML += '</div>';
         return userInfoHTML;
     }
 
@@ -362,7 +388,6 @@ document.getElementById('addLoginButton').addEventListener('click', function(eve
 
     function findMatchingGroups(subscriptions, reposts) {
         const matchingGroups = {};
-        const generateRandomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16);
 
         // Проверяем, является ли reposts массивом
         if (Array.isArray(reposts)) {
@@ -390,7 +415,7 @@ document.getElementById('addLoginButton').addEventListener('click', function(eve
         const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts);
 
         let contentHTML = '<div class="d-flex flex-row overflow-auto">';
-        contentHTML += createUserInfoSection(responseData.user_info);
+        contentHTML += createUserInfoSection(responseData.user_info, responseData.categoriesPercentage);
         contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4', matchingGroups);
         contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4', matchingGroups);
         contentHTML += '</div>';
