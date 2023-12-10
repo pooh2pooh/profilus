@@ -11,9 +11,18 @@ $username = !empty($_POST['username_to_watch']) ? $_POST['username_to_watch'] : 
 $result = '';
 
 try {
-    // Получение ID пользователя по username
+    // Определяем, является ли входное значение числовым ID или username
+    if (is_numeric($username) || strpos($username, 'id') === 0) {
+        // Если это числовой ID или начинается с 'id', извлекаем числовую часть
+        $userId = is_numeric($username) ? $username : substr($username, 2);
+    } else {
+        // Иначе предполагаем, что это username
+        $userId = $username;
+    }
+
+    // Получение информации о пользователе
     $user_response = $vk->users()->get($access_token, [
-        'user_ids' => [$username],
+        'user_ids' => [$userId],
         'fields' => ['career', 'education', 'first_name', 'last_name', 'photo_100', 'online', 'city', 'screen_name']
     ]);
 } catch (\VK\Exceptions\Api\VKApiException $e) {

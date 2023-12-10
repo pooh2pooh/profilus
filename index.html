@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="ru" data-bs-theme="auto">
   <head><script src="color-modes.js"></script>
 
     <meta charset="utf-8">
@@ -251,7 +251,7 @@
 </main>
 <script src="bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@vkontakte/superappkit@1.57.0/dist/index-umd.js"></script>
-<script type="module" src="onetap.js"></script>
+<script src="onetap.js"></script>
 
 <script>
 document.getElementById('submitButton').addEventListener('click', function() {
@@ -339,26 +339,42 @@ document.getElementById('addLoginButton').addEventListener('click', function(eve
     }
 
 
-    function createListSection(title, items, className) {
+    function createListSection(title, items, className, matchingGroups) {
         let listHTML = `<div class="${className}"><p class="lead">${title}</p><ul>`;
 
-        // Проверяем, является ли items массивом
         if (Array.isArray(items) && items.length > 0) {
             items.forEach(item => {
-                if (item.name && item.id) {
-                    listHTML += `<li>${item.name} (ID: ${item.id})</li>`;
-                } else {
-                    listHTML += `<li>${item}</li>`;
-                }
+                const itemId = item.id || item; // Учитываем, что item может быть объектом с id или просто числом
+                const style = matchingGroups[itemId] ? `style="color: ${matchingGroups[itemId]}; font-weight: bold;"` : '';
+                const content = item.name ? `${item.name} (ID: ${itemId})` : `ID: ${itemId}`;
+                listHTML += `<li ${style}>${content}</li>`;
             });
         } else {
-            listHTML += `<li>${items}</li>`; // items не является массивом, выводим как есть
+            listHTML += `<li>Информация отсутствует.</li>`;
         }
 
         listHTML += '</ul></div>';
         return listHTML;
     }
 
+
+
+
+    function findMatchingGroups(subscriptions, reposts) {
+        const matchingGroups = {};
+        const generateRandomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16);
+
+        // Проверяем, является ли reposts массивом
+        if (Array.isArray(reposts)) {
+            subscriptions.forEach(sub => {
+                if (reposts.some(rep => rep === sub.id)) {
+                    matchingGroups[sub.id] = generateRandomColor();
+                }
+            });
+        }
+
+        return matchingGroups;
+    }
 
     
     // Отправка запроса к API
@@ -371,12 +387,12 @@ document.getElementById('addLoginButton').addEventListener('click', function(eve
         console.log(data);
 
         let responseData = data; // Разбор JSON-ответа
+        const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts);
 
-        // Создаем контейнер для всего содержимого с горизонтальной прокруткой
         let contentHTML = '<div class="d-flex flex-row overflow-auto">';
         contentHTML += createUserInfoSection(responseData.user_info);
-        contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4');
-        contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4');
+        contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4', matchingGroups);
+        contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4', matchingGroups);
         contentHTML += '</div>';
 
         // Очищаем и добавляем новое содержимое в profile_interface
@@ -390,7 +406,39 @@ document.getElementById('addLoginButton').addEventListener('click', function(eve
     })
     .catch(error => {
         console.error('Ошибка:', error);
+
+        const isoTimestamp = new Date().toISOString();
+        
+        // Создаем новый параграф
+        const errorParagraph = document.createElement('p');
+        errorParagraph.className = 'alert alert-danger alert-dismissible fade show'; // Задаем класс
+        errorParagraph.textContent = isoTimestamp + ' Произошла ошибка! Скорее всего ты пытаешься проанализировать закрытый профиль.'; // Используйте error.message для получения сообщения об ошибке
+        
+        // Создаем кнопку закрытия
+        const closeButton = document.createElement('button');
+        closeButton.setAttribute('type', 'button');
+        closeButton.className = 'btn-close';
+        closeButton.setAttribute('data-bs-dismiss', 'alert');
+        closeButton.setAttribute('aria-label', 'Close');
+
+        // Добавляем кнопку закрытия в параграф
+        errorParagraph.appendChild(closeButton);
+
+        // Получаем элемент profile_interface
+        const profileInterface = document.getElementById('profile');
+
+        // Вставляем новый параграф в начало profile_interface
+        if (profileInterface.firstChild) {
+            profileInterface.insertBefore(errorParagraph, profileInterface.firstChild);
+        } else {
+            profileInterface.appendChild(errorParagraph);
+        }
+
+        // Скрываем анимацию загрузки и показываем profile_interface
+        loading.style.display = 'none';
+        profileInterface.style.display = 'block';
     });
+
 });
 
 
