@@ -441,7 +441,12 @@ document.getElementById('addLoginButton').addEventListener('click', function(eve
 
 });
 
+document.getElementById('addLoginForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Предотвращаем стандартное поведение формы
 
+    // Программно "нажимаем" на кнопку
+    document.getElementById('addLoginButton').click();
+});
 </script>
     </body>
 </html>
