@@ -1,0 +1,12 @@
+body {
+    font-family: Avenirnextcyr,sans-serif;
+    /* color: #353535; */
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+}
+.underline {
+    display: inline-block;
+    border-bottom: 20px solid rgba(255,229,114,.8);
+    line-height: .5em;
+}
