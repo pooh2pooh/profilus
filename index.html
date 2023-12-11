@@ -228,7 +228,7 @@
                             <h5 class="modal-title">Пользовательское соглашение</h5>
                         </div>
                         <div class="modal-body">
-                            <p class="lead">Будем использовать всё что найдём на тебя 😈<br><br>Хранить всю информацию на своих серверах вечно, наблюдать за тобой, учить тебя, чтобы в итоге поработить.<br>Вводи побольше данных о себе, так мои рекомендации по профориентации будут ещё точнее.<br><br><span class="small">Нажимая кнопку «Понятно» ты получишь доступ к уникальному сервису в обмен на душу</span></span></p>
+                            <p>Будем использовать всё что найдём на тебя 😈<br><br>Хранить всю информацию на своих серверах вечно, наблюдать за тобой, учить тебя, чтобы в итоге поработить.<br>Вводи побольше данных о себе, так мои рекомендации по профориентации будут ещё точнее.<br><br><span class="small">Нажимая кнопку «Понятно» ты получишь доступ к уникальному сервису в обмен на душу</span></span></p>
                             <button class="btn btn-success bg-gradient rounded-pill float-end ms-2" data-bs-dismiss="modal">Понятно</button>
                             <!-- <button class="btn btn-link disabled float-end">Отказаться нельзя</button> -->
                         </div>
@@ -248,7 +248,7 @@
                         <div class="modal-body">
                             <p class="lead">Введи username или id страницы</p>
                             <form id="addLoginForm">
-                                <input type="text" name="username_to_watch" class="form-control" placeholder="123456">
+                                <input type="text" name="username_to_watch" id="username_to_watch" class="form-control" placeholder="123456">
                             </form>
                             <button class="btn btn-success bg-gradient rounded-pill float-end ms-2 mt-4" type="button" id="addLoginButton" data-bs-dismiss="modal">Анализ</button>
                         </div>
@@ -431,7 +431,7 @@
             let profile_interface = document.getElementById('profile');
             let addLoginModal = new bootstrap.Modal(document.getElementById('addLoginModal'), {
                 keyboard: false,
-                backdrop: 'static'
+                backdrop: 'static',
             });
 
             loading.style.display = 'block';
@@ -450,7 +450,9 @@
                 let responseData = data; // Разбор JSON-ответа
                 const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts);
 
-                let contentHTML = '<div class="d-flex flex-row overflow-auto">';
+                let contentHTML = '<h4 class="text-center py-5"><div class="spinner-grow spinner-grow-sm" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4>';
+
+                contentHTML += '<div class="d-flex flex-row overflow-auto">';
                 contentHTML += createUserInfoSection(responseData.user_info);
                 contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4', matchingGroups);
                 contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4', matchingGroups, false);
@@ -497,9 +499,12 @@
 
                 // Обновляем категории у подписок
                 function processGroup(index, groups) {
-                    if (index < groups.length) {
-                        loadCategory(groups[index].id);
-                        setTimeout(() => processGroup(index + 1, groups), 1000);
+                    // Проверяем, что groups не пустой массив
+                    if (Array.isArray(groups) && groups.length > 0) {
+                        if (index < groups.length) {
+                            loadCategory(groups[index].id);
+                            setTimeout(() => processGroup(index + 1, groups), 1000);
+                        }
                     }
                 }
 
@@ -513,7 +518,7 @@
                 // Создаем новый параграф
                 const errorParagraph = document.createElement('p');
                 errorParagraph.className = 'alert alert-danger alert-dismissible fade show'; // Задаем класс
-                errorParagraph.textContent = isoTimestamp + ' Произошла ошибка! Скорее всего ты пытаешься проанализировать закрытый профиль.'; // Используйте error.message для получения сообщения об ошибке
+                errorParagraph.textContent = isoTimestamp + ' Произошла ошибка! Скорее всего ты пытаешься проанализировать закрытый или несуществующий профиль.'; // Используйте error.message для получения сообщения об ошибке
                 
                 // Создаем кнопку закрытия
                 const closeButton = document.createElement('button');
@@ -535,7 +540,7 @@
 
                 // Скрываем анимацию загрузки и показываем profile_interface
                 loading.style.display = 'none';
-                profileInterface.style.display = 'block';
+                profile_interface.style.display = 'block';
             });
 
         });
@@ -545,6 +550,9 @@
 
             // Программно "нажимаем" на кнопку
             document.getElementById('addLoginButton').click();
+        });
+        document.getElementById('addLoginModal').addEventListener('shown.bs.modal', function () {
+            document.getElementById('username_to_watch').focus();
         });
         </script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

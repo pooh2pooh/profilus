@@ -47,13 +47,18 @@
 
 
 
-
-        // Получение подписок пользователя
-        $group_response = $vk->groups()->get($access_token, [
-            'user_id' => $user_response[0]['id'],
-            'extended' => 1,
-            'count' => 100
-        ]);
+        try {
+            // Получение подписок пользователя
+            $group_response = $vk->groups()->get($access_token, [
+                'user_id' => $user_response[0]['id'],
+                'extended' => 1,
+                'count' => 100
+            ]);
+        } catch (\VK\Exceptions\Api\VKApiPrivateProfileException $e) {
+            // Обработка исключений, это закрытый профиль
+            exit("Ошибка, это закрытый профиль.");
+            // Дополнительная обработка ошибок API
+        }
 
 
         if (!empty($group_response['items'])) {
@@ -83,6 +88,7 @@
 
         if (!empty($posts_response['items'])) {
             $result['reposts'] = array();
+
             foreach ($posts_response['items'] as $post) {
                 if (isset($post['copy_history']) && !empty($post['copy_history'])) {
                     // Ваш код для обработки репостов
@@ -95,11 +101,12 @@
                     }
                 }
             }
+
         } else {
             $result['reposts'] = "Репосты из групп не найдены.";
         }
     } else {
-        $result['error'] = "Пользователь $username не найден.";
+        exit("Пользователь $username не найден.");
     }
 
     // var_dump($result);
