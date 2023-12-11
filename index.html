@@ -327,13 +327,23 @@
             function createListSection(title, items, className, matchingGroups, isSubscription = true) {
                 let listHTML = `<div class="${className}"><h2 class="underline pt-1">${title}</h2><ul>`;
 
-                if (Array.isArray(items) && items.length > 0) {
-                    items.forEach(item => {
-                        const itemId = item.id || item;
-                        const style = matchingGroups[itemId] ? `style="color: ${matchingGroups[itemId]}; font-weight: bold;"` : '';
-                        const content = item.name ? `${item.name} (ID: ${itemId})` : `ID: ${itemId}`;
-                        const categorySpan = isSubscription ? `<span id="category_${itemId}"></span>` : '';
-                        listHTML += `<li ${style}>${content} ${categorySpan}</li>`;
+                if (typeof items === 'object' && items !== null && items.order && Array.isArray(items.order)) {
+                    // Сортировка элементов в соответствии с порядком в items.order
+                    items.order.forEach(itemId => {
+                        if (items.hasOwnProperty(itemId)) {
+                            const item = items[itemId];
+                            const isMatched = matchingGroups && matchingGroups[itemId];
+                            const style = isMatched ? `style="color: ${matchingGroups[itemId]}; font-weight: bold;"` : '';
+                            
+                            let content = isSubscription ? `${item.name} (ID: ${itemId})` : `<span id="group_${itemId}">ID: ${itemId}</span>`;
+
+                            if (!isSubscription && item.dates && Array.isArray(item.dates)) {
+                                content += `: ${item.dates.join(', ')}`;
+                            }
+
+                            const categorySpan = isSubscription ? `<span id="category_${itemId}"></span>` : '';
+                            listHTML += `<li ${style}>${content} ${categorySpan}</li>`;
+                        }
                     });
                 } else {
                     listHTML += `<li>Информация отсутствует.</li>`;
@@ -343,26 +353,34 @@
                 return listHTML;
             }
 
+
             // Находит совпадения в подписках и репостах, подсвечивает их
             function findMatchingGroups(subscriptions, reposts) {
                 const matchingGroups = {};
 
-                // Проверяем, является ли reposts массивом
-                if (Array.isArray(reposts)) {
-                    subscriptions.forEach(sub => {
-                        if (reposts.some(rep => rep === sub.id)) {
-                            matchingGroups[sub.id] = generateRandomColor();
+                // Проверяем, являются ли subscriptions и reposts объектами
+                if (typeof subscriptions === 'object' && subscriptions !== null &&
+                    typeof reposts === 'object' && reposts !== null) {
+                    
+                    for (let subId in subscriptions) {
+                        if (subscriptions.hasOwnProperty(subId)) {
+                            // Проверяем, существует ли репост с таким же ID, как у подписки
+                            if (reposts.hasOwnProperty(subId)) {
+                                matchingGroups[subId] = generateRandomColor();
+                            }
                         }
-                    });
+                    }
                 }
 
                 return matchingGroups;
             }
 
+
+
             // Получает категорию групп
             function loadCategory(group_id) {
                 document.getElementById('category_' + group_id).innerHTML = '<div class="spinner-grow spinner-grow-sm" role="status"><span class="visually-hidden"></span></div>';
-                fetch('generate_category.php', {
+                fetch('/api/generate_category.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -373,6 +391,25 @@
                 .then(category => {
                     document.getElementById('category_' + group_id).innerHTML = '<span class="badge text-bg-info">' + category + '</span>';
                     updateCategoryCount(category);
+                    updateChart(myChart, categoryCounts);
+                })
+                .catch(error => console.error('Ошибка:', error));
+            }
+
+            // Получает имя группы из репоста, и генерирует её категорию
+            function getGroup(group_id) {
+                document.getElementById('group_' + group_id).innerHTML = '<div class="spinner-grow spinner-grow-sm" role="status"><span class="visually-hidden"></span></div>';
+                fetch('/api/get_group.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'group_id=' + group_id
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('group_' + group_id).innerHTML = '<span class="badge text-bg-info">' + data.category + '</span> ' + data.name + ' (ID: '+ group_id + ')';
+                    updateCategoryCount(data.category);
                     updateChart(myChart, categoryCounts);
                 })
                 .catch(error => console.error('Ошибка:', error));
@@ -399,7 +436,7 @@
             loading.style.display = 'block';
 
             // Отправка запроса к API
-            fetch('/auth.php', {
+            fetch('/api/auth.php', {
                 method: 'POST',
                 body: new FormData(form)
                 // Дополнительные параметры запроса, если нужны
@@ -439,7 +476,7 @@
 
             
             // Отправка запроса к API
-            fetch('/get_user.php', {
+            fetch('/api/get_user.php', {
                 method: 'POST',
                 body: formData
             })
@@ -498,17 +535,32 @@
                 profile_interface.style.display = 'block';
 
                 // Обновляем категории у подписок
-                function processGroup(index, groups) {
-                    // Проверяем, что groups не пустой массив
-                    if (Array.isArray(groups) && groups.length > 0) {
-                        if (index < groups.length) {
-                            loadCategory(groups[index].id);
-                            setTimeout(() => processGroup(index + 1, groups), 1000);
-                        }
+                function processGroup(index, groups, callback) {
+                    let groupIds = Object.keys(groups); // Получаем массив ключей (ID групп) из объекта
+                    if (index < groupIds.length-1) { // здесь -1 для того чтобы пропустить массив order
+                        loadCategory(groupIds[index]);
+                        setTimeout(() => processGroup(index + 1, groups, callback), 1000);
+                    } else if (callback) {
+                        callback(); // Вызов callback после завершения всех итераций
                     }
                 }
 
-                processGroup(0, responseData.subscriptions);
+                function processReposts(index, reposts, callback) {
+                    let repostIds = Object.keys(reposts); // Получаем массив ключей (ID групп) из объекта
+                    if (index < repostIds.length-1) { // здесь -1 для того чтобы пропустить массив order
+                        getGroup(repostIds[index]); // Предполагается, что функция getGroup определена
+                        setTimeout(() => processReposts(index + 1, reposts, callback), 1000);
+                    } else if (callback) {
+                        callback(); // Вызов callback после завершения всех итераций
+                    }
+                }
+
+                // Сначала обрабатываем репосты, затем подписки
+                processReposts(0, responseData.reposts, function() {
+                    processGroup(0, responseData.subscriptions);
+                });
+
+
             })
             .catch(error => {
                 console.error('Ошибка:', error);

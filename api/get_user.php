@@ -63,18 +63,19 @@
 
         if (!empty($group_response['items'])) {
             $result['subscriptions'] = array();
-
+            $result['subscriptions']['order'] = array(); // Массив для сохранения порядка ID групп
+        
             foreach ($group_response['items'] as $group) {
                 // Сохраняем как название группы, так и её ID
-                array_push($result['subscriptions'], array(
-                    'name' => $group['name'],
-                    'id' => $group['id']
-                ));
+                $result['subscriptions'][$group['id']] = array(
+                    'name' => $group['name']
+                );
+                $result['subscriptions']['order'][] = $group['id']; // Сохраняем порядок ID групп
             }
-
         } else {
             $result['subscriptions'] = "У пользователя нет подписок на группы.";
         }
+        
 
 
 
@@ -88,23 +89,28 @@
 
         if (!empty($posts_response['items'])) {
             $result['reposts'] = array();
-
+            $result['reposts']['order'] = array(); // Массив для сохранения порядка ID групп
+        
             foreach ($posts_response['items'] as $post) {
                 if (isset($post['copy_history']) && !empty($post['copy_history'])) {
-                    // Ваш код для обработки репостов
                     $repost = $post['copy_history'][0];
                     if (isset($repost['owner_id']) && $repost['owner_id'] < 0) {
                         $group_id = abs($repost['owner_id']);
-                        if (!in_array($group_id, $result['reposts'])) {
-                            array_push($result['reposts'], $group_id);
+        
+                        // Проверяем, существует ли уже запись для этой группы
+                        if (!array_key_exists($group_id, $result['reposts'])) {
+                            $result['reposts'][$group_id] = array('dates' => array());
+                            $result['reposts']['order'][] = $group_id; // Сохраняем порядок ID групп
                         }
+        
+                        // Добавляем дату репоста в массив дат для данной группы
+                        $result['reposts'][$group_id]['dates'][] = date('Y-m-d H:i:s', $repost['date']);
                     }
                 }
             }
-
         } else {
             $result['reposts'] = "Репосты из групп не найдены.";
-        }
+        }        
     } else {
         exit("Пользователь $username не найден.");
     }
