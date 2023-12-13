@@ -14,14 +14,18 @@
     $username = !empty($_POST['username_to_watch']) ? $_POST['username_to_watch'] : 'pooh2pooh'; // Если не передан ID который нужно анализировать
 
     try {
-        // Определяем, является ли входное значение числовым ID или username
+        // Определяем, является ли входное значение числовым ID, username или URL
         if (is_numeric($username) || strpos($username, 'id') === 0) {
             // Если это числовой ID или начинается с 'id', извлекаем числовую часть
             $user_id = is_numeric($username) ? $username : substr($username, 2);
+        } elseif (preg_match('/https?:\/\/vk\.com\/(id[0-9]+)/', $username, $matches)) {
+            // Если это URL, извлекаем ID из URL
+            $user_id = substr($matches[1], 2);
         } else {
             // Иначе предполагаем, что это username
             $user_id = $username;
         }
+
 
         // Получение информации о пользователе
         $user_response = $vk->users()->get($access_token, [
