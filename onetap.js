@@ -30,6 +30,10 @@ const oneTapButton = window.SuperAppKit.Connect.buttonOneTapAuth({
         let loading = document.getElementById('loading');
         let profile = document.getElementById('profile_refresh_global');
         let profile_interface = document.getElementById('profile');
+        let reqModal = new bootstrap.Modal(document.getElementById('reqModal'), {
+            keyboard: false,
+            backdrop: 'static'
+        });
 
         // Добавляем задержку перед открытием модального окна
           setTimeout(() => {

@@ -292,8 +292,31 @@
 
             let myChart = '';
             const generateRandomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16);
-
+            const categoryColors = {
+                'Неизвестная категория': 'rgba(255, 255, 255, 0.8)',
+                'IT': 'rgba(255, 99, 132, 0.4)',
+                'Продажи': 'rgba(22, 160, 133, 0.4)',
+                'Инженерия': 'rgba(241, 196, 15, 0.4)',
+                'Медицина': 'rgba(155, 89, 182, 0.4)',
+                'Образование': 'rgba(52, 152, 219, 0.4)',
+                'Музыка': 'rgba(230, 126, 34, 0.4)',
+                'Городские сообщества': 'rgba(56, 214, 123, 0.4)',
+                'Машины': 'rgba(172, 214, 93, 0.4)',
+                'Бизнес': 'rgba(142, 68, 173, 0.4)',
+                'Компании': 'rgba(44, 62, 80, 0.4)',
+                'Linux': 'rgba(39, 174, 96, 0.4)',
+                'Подслушано': 'rgba(211, 84, 0, 0.4)',
+                'Мобильные устройства': 'rgba(192, 57, 43, 0.4)',
+                'Программирование': 'rgba(127, 140, 141, 0.4)',
+                'Фронтенд': 'rgba(26, 188, 156, 0.4)',
+                'Бэкенд': 'rgba(231, 76, 60, 0.4)',
+                'Искусство': 'rgba(144, 44, 40, 0.4)',
+                // Другие категории...
+            };
             let categoryCounts = {};
+
+
+            
 
             // Считаем и запоминаем все категории подписок
             function updateCategoryCount(category) {
@@ -313,13 +336,18 @@
             function updateChart(chart, categoryCounts) {
                 chart.data.labels = Object.keys(categoryCounts);
                 chart.data.datasets[0].data = Object.values(categoryCounts);
+
+                // Обновляем цвета для диаграммы
+                chart.data.datasets[0].backgroundColor = chart.data.labels.map(label => categoryColors[label] || 'rgba(0, 0, 0, 0.2)');
+                chart.data.datasets[0].borderColor = chart.data.labels.map(label => categoryColors[label] ? categoryColors[label].replace('0.2', '1') : 'rgba(0, 0, 0, 1)');
+
                 chart.update();
             }
 
 
             // Рисует колонку с информациоей о пользователе
             function createUserInfoSection(userInfo) {
-                
+
                 let userInfoHTML = '<div class="col-12 col-lg-4"><h2 class="underline pt-1">Информация</h2><ul class="list-group list-group-flush">';
                 if (userInfo) {
                     for (let key in userInfo) {
@@ -345,7 +373,7 @@
                 userInfoHTML += '</ul>';
 
                 // Добавляем диаграму категорий
-                userInfoHTML += '<div class="w-100 pt-5"><canvas id="myChart" class="mx-auto"></canvas></div>';
+                userInfoHTML += '<div class="w-100 pt-5"><canvas id="myChart" class="mx-auto" height="500"></canvas></div>';
                 
                 userInfoHTML += '</div>';
                 return userInfoHTML;
@@ -415,10 +443,11 @@
                     },
                     body: 'group_id=' + group_id
                 })
-                .then(response => response.text())
-                .then(category => {
-                    document.getElementById('category_' + group_id).innerHTML = '<span class="badge text-bg-info">' + category + '</span>';
-                    updateCategoryCount(category);
+                .then(response => response.json())
+                .then(data => {
+                    const color = categoryColors[data.category] || 'rgba(255, 255, 255, 1)'; // Задаем цвет по умолчанию, если категория не найдена
+                    document.getElementById('category_' + group_id).innerHTML = `<span class="badge" style="background-color: ${color}">${data.category}</span>`;
+                    updateCategoryCount(data.category);
                     updateChart(myChart, categoryCounts);
                 })
                 .catch(error => console.error('Ошибка:', error));
@@ -427,7 +456,7 @@
             // Получает имя группы из репоста, и генерирует её категорию
             function getGroup(group_id) {
                 document.getElementById('group_' + group_id).innerHTML = '<div class="spinner-grow spinner-grow-sm" role="status"><span class="visually-hidden"></span></div>';
-                fetch('/api/get_group.php', {
+                fetch('/api/generate_category.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -436,7 +465,8 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('group_' + group_id).innerHTML = '<span class="badge text-bg-info">' + data.category + '</span> ' + data.name + ' (ID: '+ group_id + ')';
+                    const color = categoryColors[data.category] || 'rgba(255, 255, 255, 1)'; // Задаем цвет по умолчанию, если категория не найдена
+                    document.getElementById('group_' + group_id).innerHTML = `<span class="badge" style="background-color: ${color}">${data.category}</span> ${data.name} (ID: ${group_id})`;
                     updateCategoryCount(data.category);
                     updateChart(myChart, categoryCounts);
                 })
@@ -553,7 +583,7 @@
                 let responseData = data; // Разбор JSON-ответа
                 const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts);
 
-                let contentHTML = '<h4 class="text-center py-5"><div class="spinner-grow spinner-grow-sm" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4>';
+                let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 10 минут</p>';
 
                 contentHTML += '<div class="d-flex flex-row overflow-auto">';
                 contentHTML += createUserInfoSection(responseData.user_info);
@@ -567,31 +597,25 @@
 
                 let ctx = document.getElementById('myChart').getContext('2d');
                 myChart = new Chart(ctx, {
-                    type: 'pie', // или 'doughnut' для кольцевой диаграммы
+                    type: 'doughnut',
                     data: {
-                        labels: [],
+                        labels: Object.keys(categoryColors), // Массив названий категорий
                         datasets: [{
                             label: 'Подписок из категории',
-                            data: [],
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(111, 20, 55, 0.2)',
-                                'rgba(88, 77, 66, 0.2)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(111, 20, 55, 1)',
-                                'rgba(88, 77, 66, 1)'
-                            ],
+                            data: [], // Здесь данные для каждой категории
+                            backgroundColor: Object.values(categoryColors), // Массив цветов для каждой категории
+                            borderColor: Object.values(categoryColors).map(color => color.replace('0.2', '1')), // Темные границы для каждого цвета
                             borderWidth: 1
                         }]
                     },
                     options: {
                         responsive: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            },
+                        
+                        },
                         maintainAspectRatio: false
                     }
                 });
