@@ -2,6 +2,15 @@
 
     require 'vk_api_config.php';
 
+
+    //$_POST['username_to_watch'] = '411408000';
+    //$_POST['access_token'] = 'vk1.a.lPqo5DR941MAY5LpFq8nMjsL1CS82XEtSS5BpmXTkLyQv0jm2d0HpA3Rykg4O2RvXJFku1n6IPGNaS5OwFaEuvdyPYfNHRrm_VX1COVaWgxxeOokyDuxDkBo76QzONnJPZ6gP6JgG7zLXWapO0skQ0ZFVluSIO6cGAp97PfNPMyk1UQtzd0534RGdDdYZNMEMP1qqdHIdBLWdp4FCRDDdg';
+
+    // Если пользователь авторизовался по кнопке VK ID,
+    // сразу проводим анализ его профиля с его токеном
+    if (!empty($_POST['access_token'])) {
+        $access_token = $_POST['access_token'];
+    }
     $username = !empty($_POST['username_to_watch']) ? $_POST['username_to_watch'] : 'sega_as'; // Если не передан ID который нужно анализировать
 
     try {
@@ -21,15 +30,15 @@
         ]);
     } catch (\VK\Exceptions\Api\VKApiException $e) {
         // Обработка исключений, связанных с API
-        exit("Ошибка VK API: " . $e->getMessage());
+        exit(json_encode(['status' => 'error', 'message' => 'Ошибка VK API: ' . $e->getMessage()]));
         // Дополнительная обработка ошибок API
     } catch (\VK\Exceptions\VKClientException $e) {
         // Обработка исключений, связанных с клиентом VK
-        exit("Ошибка клиента VK: " . $e->getMessage());
+        exit(json_encode(['status' => 'error', 'message' => 'Ошибка клиента VK: ' . $e->getMessage()]));
         // Дополнительная обработка ошибок клиента
     } catch (\Exception $e) {
         // Обработка всех остальных исключений
-        exit("Общая ошибка: " . $e->getMessage());
+        exit(json_encode(['status' => 'error', 'message' => 'Общая ошибка: ' . $e->getMessage()]));
         // Дополнительная обработка общих исключений
     }
 
@@ -56,7 +65,7 @@
             ]);
         } catch (\VK\Exceptions\Api\VKApiPrivateProfileException $e) {
             // Обработка исключений, это закрытый профиль
-            exit("Ошибка, это закрытый профиль.");
+            exit(json_encode(['status' => 'error', 'message' => 'Ошибка, это закрытый профиль.']));
             // Дополнительная обработка ошибок API
         }
 
@@ -112,7 +121,7 @@
             $result['reposts'] = "Репосты из групп не найдены.";
         }        
     } else {
-        exit("Пользователь $username не найден.");
+        exit(json_encode(['status' => 'error', 'message' => 'Пользователь ' . $username . ' не найден.']));
     }
 
     // var_dump($result);
