@@ -45,6 +45,7 @@ const oneTapButton = window.SuperAppKit.Connect.buttonOneTapAuth({
         .then(response => response.json())
         .then(data => {
             // Обработка ответа от API
+            console.log(data);
             //console.log('access_token: ' + data.response.access_token);
             //console.log('user_id: ' + data.response.user_id);
             // Отправка запроса к API
@@ -121,12 +122,23 @@ const oneTapButton = window.SuperAppKit.Connect.buttonOneTapAuth({
                 }
 
                 function processReposts(index, reposts, callback) {
-                    let repostIds = Object.keys(reposts); // Получаем массив ключей (ID групп) из объекта
-                    if (index < repostIds.length-1) { // здесь -1 для того чтобы пропустить массив order
-                        getGroup(repostIds[index]); // Предполагается, что функция getGroup определена
-                        setTimeout(() => processReposts(index + 1, reposts, callback), 1000);
-                    } else if (callback) {
-                        callback(); // Вызов callback после завершения всех итераций
+                    // Проверяем, является ли reposts объектом
+                    if (typeof reposts === 'object' && reposts !== null) {
+                        let repostIds = Object.keys(reposts); // Получаем массив ключей (ID групп) из объекта
+                        if (index < repostIds.length) {
+                            if (repostIds[index] !== 'order') { // Пропускаем ключ 'order', если он есть
+                                getGroup(repostIds[index]); // Предполагается, что функция getGroup определена
+                            }
+                            setTimeout(() => processReposts(index + 1, reposts, callback), 1000);
+                        } else if (callback) {
+                            callback(); // Вызов callback после завершения всех итераций
+                        }
+                    } else if (typeof reposts === 'string') {
+                        // Обработка случая, когда reposts - это строка
+                        console.error('Анализ: Не найдено ни одного репоста на стене пользователя, пропускаю.');
+                        if (callback) {
+                            callback();
+                        }
                     }
                 }
 
@@ -139,35 +151,7 @@ const oneTapButton = window.SuperAppKit.Connect.buttonOneTapAuth({
             })
             .catch(error => {
                 console.error('Ошибка:', error);
-
-                const isoTimestamp = new Date().toISOString();
-                
-                // Создаем новый параграф
-                const errorParagraph = document.createElement('p');
-                errorParagraph.className = 'alert alert-danger alert-dismissible fade show'; // Задаем класс
-                errorParagraph.textContent = isoTimestamp + ' Произошла ошибка! Скорее всего ты пытаешься проанализировать закрытый или несуществующий профиль.'; // Используйте error.message для получения сообщения об ошибке
-                
-                // Создаем кнопку закрытия
-                const closeButton = document.createElement('button');
-                closeButton.setAttribute('type', 'button');
-                closeButton.className = 'btn-close';
-                closeButton.setAttribute('data-bs-dismiss', 'alert');
-                closeButton.setAttribute('aria-label', 'Close');
-
-                // Добавляем кнопку закрытия в параграф
-                errorParagraph.appendChild(closeButton);
-
-
-                // Вставляем новый параграф в начало profile_interface
-                if (profile_interface.firstChild) {
-                    profile_interface.insertBefore(errorParagraph, profile_interface.firstChild);
-                } else {
-                    profile_interface.appendChild(errorParagraph);
-                }
-
-                // Скрываем анимацию загрузки и показываем profile_interface
-                loading.style.display = 'none';
-                profile_interface.style.display = 'block';
+                errorUserNotFound(profile_interface);
             });
 
         });

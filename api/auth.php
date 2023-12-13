@@ -65,12 +65,7 @@
         } else {
             // Обработка полученного ответа
             $decodedResponse = json_decode($response, true);
-            if (isset($decodedResponse['response'])) {
-                // Дальнейшая обработка $access_token
-                // ...
-                // $accessToken = $decodedResponse['response']['access_token'];
-                // $userId = $decodedResponse['response']['user_id'];
-            } else {
+            if (!isset($decodedResponse['response'])) {
                 echo json_encode(['status' => 'error', 'message' => 'Ошибка VK API: ' . $decodedResponse['error']['error_msg']]);
             }
         }

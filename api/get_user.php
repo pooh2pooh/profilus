@@ -11,7 +11,7 @@
     if (!empty($_POST['access_token'])) {
         $access_token = $_POST['access_token'];
     }
-    $username = !empty($_POST['username_to_watch']) ? $_POST['username_to_watch'] : 'sega_as'; // Если не передан ID который нужно анализировать
+    $username = !empty($_POST['username_to_watch']) ? $_POST['username_to_watch'] : 'pooh2pooh'; // Если не передан ID который нужно анализировать
 
     try {
         // Определяем, является ли входное значение числовым ID или username
@@ -96,7 +96,7 @@
         ]);
 
 
-        if (!empty($posts_response['items'])) {
+        if (!empty($posts_response['items'][0]['copy_history'])) {
             $result['reposts'] = array();
             $result['reposts']['order'] = array(); // Массив для сохранения порядка ID групп
         
@@ -118,7 +118,7 @@
                 }
             }
         } else {
-            $result['reposts'] = "Репосты из групп не найдены.";
+            $result['reposts'] = 'Репосты из групп не найдены.';
         }        
     } else {
         exit(json_encode(['status' => 'error', 'message' => 'Пользователь ' . $username . ' не найден.']));
