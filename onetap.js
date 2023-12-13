@@ -72,7 +72,7 @@ const oneTapButton = window.SuperAppKit.Connect.buttonOneTapAuth({
                 let responseData = data; // Разбор JSON-ответа
                 const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts);
 
-                let contentHTML = '<h4 class="text-center py-5"><div class="spinner-grow spinner-grow-sm" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4>';
+                let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 10 минут</p>';
 
                 contentHTML += '<div class="d-flex flex-row overflow-auto">';
                 contentHTML += createUserInfoSection(responseData.user_info);
@@ -86,33 +86,27 @@ const oneTapButton = window.SuperAppKit.Connect.buttonOneTapAuth({
 
                 let ctx = document.getElementById('myChart').getContext('2d');
                 myChart = new Chart(ctx, {
-                    type: 'pie', // или 'doughnut' для кольцевой диаграммы
-                    data: {
-                        labels: [],
-                        datasets: [{
-                            label: 'Подписок из категории',
-                            data: [],
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(111, 20, 55, 0.2)',
-                                'rgba(88, 77, 66, 0.2)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(111, 20, 55, 1)',
-                                'rgba(88, 77, 66, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: false,
-                        maintainAspectRatio: false
-                    }
+                  type: 'doughnut',
+                  data: {
+                      labels: Object.keys(categoryColors), // Массив названий категорий
+                      datasets: [{
+                          label: 'Подписок из категории',
+                          data: [], // Здесь данные для каждой категории
+                          backgroundColor: Object.values(categoryColors), // Массив цветов для каждой категории
+                          borderColor: Object.values(categoryColors).map(color => color.replace('0.2', '1')), // Темные границы для каждого цвета
+                          borderWidth: 1
+                      }]
+                  },
+                  options: {
+                      responsive: false,
+                      plugins: {
+                          legend: {
+                              position: 'bottom',
+                          },
+                      
+                      },
+                      maintainAspectRatio: false
+                  }
                 });
                 
                 // Скрываем анимацию загрузки и показываем profile_interface
