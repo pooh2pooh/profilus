@@ -31,6 +31,11 @@ const oneTapButton = window.SuperAppKit.Connect.buttonOneTapAuth({
         let profile = document.getElementById('profile_refresh_global');
         let profile_interface = document.getElementById('profile');
 
+        // Добавляем задержку перед открытием модального окна
+          setTimeout(() => {
+            reqModal.show();
+        }, 1500); // Задержка в 2 секунды
+
         form.style.display = 'none';
         loading.style.display = 'block';
 
