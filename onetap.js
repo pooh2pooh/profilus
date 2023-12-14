@@ -1,3 +1,46 @@
+// Извлечение параметров из URL
+const urlParams = new URLSearchParams(window.location.search);
+const payload = urlParams.get('payload');
+const state = urlParams.get('state');
+
+if (payload) {
+    try {
+        const payloadData = JSON.parse(decodeURIComponent(payload));
+        const silentToken = payloadData.token;
+        const uuid = payloadData.uuid;
+        let reqModal = new bootstrap.Modal(document.getElementById('reqModal'), {
+            keyboard: false,
+            backdrop: 'static'
+        });
+
+        // Отправка данных на сервер
+        fetch('/api/auth.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `silent_token=${silentToken}&uuid=${uuid}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Обработка ответа от сервера
+            console.log(data);
+            // Добавляем задержку перед открытием модального окна
+              setTimeout(() => {
+                reqModal.show();
+            }, 1500); // Задержка в 2 секунды
+            // Открываем анализ профиля пользователя
+            renderProfile(data);
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+        });
+    } catch (e) {
+        console.error('Ошибка при парсинге payload:', e);
+    }
+}
+
+
 window.SuperAppKit.Config.init({
   appId: 51811999, // Тут нужно подставить ID своего приложения.
 
@@ -28,8 +71,6 @@ const oneTapButton = window.SuperAppKit.Connect.buttonOneTapAuth({
 
         let form = document.getElementById('authForm');
         let loading = document.getElementById('loading');
-        let profile = document.getElementById('profile_refresh_global');
-        let profile_interface = document.getElementById('profile');
         let reqModal = new bootstrap.Modal(document.getElementById('reqModal'), {
             keyboard: false,
             backdrop: 'static'
@@ -53,109 +94,9 @@ const oneTapButton = window.SuperAppKit.Connect.buttonOneTapAuth({
         })
         .then(response => response.json())
         .then(data => {
-            // Обработка ответа от API
+            // Открываем анализ профиля пользователя
             console.log(data);
-            //console.log('access_token: ' + data.response.access_token);
-            //console.log('user_id: ' + data.response.user_id);
-            // Отправка запроса к API
-            fetch('/api/get_user.php', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-              },
-              body: 'access_token=' + data.response.access_token + '&username_to_watch=' + data.response.user_id
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-
-                let responseData = data; // Разбор JSON-ответа
-                const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts);
-
-                let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 10 минут</p>';
-
-                contentHTML += '<div class="d-flex flex-row overflow-auto">';
-                contentHTML += createUserInfoSection(responseData.user_info);
-                contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4', matchingGroups);
-                contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4', matchingGroups, false);
-                contentHTML += '</div>';
-
-                profile.classList.remove("form-signin");
-                // Очищаем и добавляем новое содержимое в profile_interface
-                profile_interface.innerHTML = contentHTML;
-
-                let ctx = document.getElementById('myChart').getContext('2d');
-                myChart = new Chart(ctx, {
-                  type: 'doughnut',
-                  data: {
-                      labels: Object.keys(categoryColors), // Массив названий категорий
-                      datasets: [{
-                          label: 'Подписок из категории',
-                          data: [], // Здесь данные для каждой категории
-                          backgroundColor: Object.values(categoryColors), // Массив цветов для каждой категории
-                          borderColor: Object.values(categoryColors).map(color => color.replace('0.2', '1')), // Темные границы для каждого цвета
-                          borderWidth: 1
-                      }]
-                  },
-                  options: {
-                      responsive: false,
-                      plugins: {
-                          legend: {
-                              position: 'bottom',
-                          },
-                      
-                      },
-                      maintainAspectRatio: false
-                  }
-                });
-                
-                // Скрываем анимацию загрузки и показываем profile_interface
-                loading.style.display = 'none';
-                profile_interface.style.display = 'block';
-
-                // Обновляем категории у подписок
-                function processGroup(index, groups, callback) {
-                    let groupIds = Object.keys(groups); // Получаем массив ключей (ID групп) из объекта
-                    if (index < groupIds.length-1) { // здесь -1 для того чтобы пропустить массив order
-                        loadCategory(groupIds[index]);
-                        setTimeout(() => processGroup(index + 1, groups, callback), 1000);
-                    } else if (callback) {
-                        callback(); // Вызов callback после завершения всех итераций
-                    }
-                }
-
-                function processReposts(index, reposts, callback) {
-                    // Проверяем, является ли reposts объектом
-                    if (typeof reposts === 'object' && reposts !== null) {
-                        let repostIds = Object.keys(reposts); // Получаем массив ключей (ID групп) из объекта
-                        if (index < repostIds.length) {
-                            if (repostIds[index] !== 'order') { // Пропускаем ключ 'order', если он есть
-                                getGroup(repostIds[index]); // Предполагается, что функция getGroup определена
-                            }
-                            setTimeout(() => processReposts(index + 1, reposts, callback), 1000);
-                        } else if (callback) {
-                            callback(); // Вызов callback после завершения всех итераций
-                        }
-                    } else if (typeof reposts === 'string') {
-                        // Обработка случая, когда reposts - это строка
-                        console.error('Анализ: Не найдено ни одного репоста на стене пользователя, пропускаю.');
-                        if (callback) {
-                            callback();
-                        }
-                    }
-                }
-
-                // Сначала обрабатываем репосты, затем подписки
-                processReposts(0, responseData.reposts, function() {
-                    processGroup(0, responseData.subscriptions);
-                });
-
-
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                errorUserNotFound(profile_interface);
-            });
+            renderProfile(data);
 
         });
         return;
@@ -166,11 +107,13 @@ const oneTapButton = window.SuperAppKit.Connect.buttonOneTapAuth({
       case window.SuperAppKit.ConnectEvents.ButtonOneTapAuthEventsSDK.SHOW_LOGIN: // = 'VKSDKButtonOneTapAuthShowLogin'
         // url - строка с url, на который будет произведён редирект после авторизации.
         // state - состояние вашего приложение или любая произвольная строка, которая будет добавлена к url после авторизации.
+        console.log('Пытаюсь авторизовать пользователя через VK ID... (VKSDKButtonOneTapAuthShowLogin)');
         return window.SuperAppKit.Connect.redirectAuth({ url: 'https://ata.poohprod.ru', state: 'dj29fnsadjsd82qwe'});
         // Пользователь перешел по кнопке "Войти другим способом"
       case window.SuperAppKit.ConnectEvents.ButtonOneTapAuthEventsSDK.SHOW_LOGIN_OPTIONS: // = 'VKSDKButtonOneTapAuthShowLoginOptions'
         // Параметр screen: phone позволяет сразу открыть окно ввода телефона в VK ID
         // Параметр url: ссылка для перехода после авторизации. Должен иметь https схему. Обязательный параметр.
+        console.log('Пытаюсь авторизовать пользователя через VK ID... (VKSDKButtonOneTapAuthShowLoginOptions)');
         return window.SuperAppKit.Connect.redirectAuth({ screen: 'phone', url: 'https://ata.poohprod.ru' });
     }
 

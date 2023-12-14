@@ -47,6 +47,7 @@
             // Определяем категорию с наибольшим количеством найденных ключевых слов
             $maxCount = max($categoryCounts);
             $result['category'] = array_search($maxCount, $categoryCounts);
+            $result['precision'] = $categoryCounts;
         }
 
         echo json_encode($result);

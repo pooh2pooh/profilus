@@ -128,7 +128,7 @@
             </symbol>
         </svg>
 
-        <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
+        <div class="dropdown position-fixed bottom-0 start-0 mb-3 ms-3 bd-mode-toggle">
             <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
                     id="bd-theme"
                     type="button"
@@ -284,14 +284,17 @@
             </div>
 
         </main>
-        <script src="bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script src="bootstrap.bundle.min.js"></script>
         <script src="https://unpkg.com/@vkontakte/superappkit@1.57.0/dist/index-umd.js"></script>
         <script src="onetap.js"></script>
 
         <script>
 
-            let myChart = '';
-            const generateRandomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16);
+            let tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+            let tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
+            let myChart = ''
+            const generateRandomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16)
             const categoryColors = {
                 'Неизвестная категория': 'rgba(255, 255, 255, 0.8)',
                 'IT': 'rgba(255, 99, 132, 0.4)',
@@ -312,8 +315,8 @@
                 'Бэкенд': 'rgba(231, 76, 60, 0.4)',
                 'Искусство': 'rgba(144, 44, 40, 0.4)',
                 // Другие категории...
-            };
-            let categoryCounts = {};
+            }
+            let categoryCounts = {}
 
 
             
@@ -321,98 +324,98 @@
             // Считаем и запоминаем все категории подписок
             function updateCategoryCount(category) {
                 if (category == '') {
-                    category = 'Неизвестная категория';
+                    category = 'Неизвестная категория'
                 }
 
                 if (categoryCounts[category]) {
-                    categoryCounts[category]++;
+                    categoryCounts[category]++
                 } else {
-                    categoryCounts[category] = 1;
+                    categoryCounts[category] = 1
                 }
             }
 
 
             // Обновляем диаграму с процентным соотношением категорий
             function updateChart(chart, categoryCounts) {
-                chart.data.labels = Object.keys(categoryCounts);
-                chart.data.datasets[0].data = Object.values(categoryCounts);
+                chart.data.labels = Object.keys(categoryCounts)
+                chart.data.datasets[0].data = Object.values(categoryCounts)
 
                 // Обновляем цвета для диаграммы
-                chart.data.datasets[0].backgroundColor = chart.data.labels.map(label => categoryColors[label] || 'rgba(0, 0, 0, 0.2)');
-                chart.data.datasets[0].borderColor = chart.data.labels.map(label => categoryColors[label] ? categoryColors[label].replace('0.2', '1') : 'rgba(0, 0, 0, 1)');
+                chart.data.datasets[0].backgroundColor = chart.data.labels.map(label => categoryColors[label] || 'rgba(0, 0, 0, 0.2)')
+                chart.data.datasets[0].borderColor = chart.data.labels.map(label => categoryColors[label] ? categoryColors[label].replace('0.2', '1') : 'rgba(0, 0, 0, 1)')
 
-                chart.update();
+                chart.update()
             }
 
 
             // Рисует колонку с информациоей о пользователе
             function createUserInfoSection(userInfo) {
 
-                let userInfoHTML = '<div class="col-12 col-lg-4"><h2 class="underline pt-1">Информация</h2><ul class="list-group list-group-flush">';
+                let userInfoHTML = '<div class="col-12 col-lg-4"><h2 class="underline pt-1">Информация</h2><ul class="list-group list-group-flush">'
                 if (userInfo) {
                     for (let key in userInfo) {
-                        let value = userInfo[key];
+                        let value = userInfo[key]
 
                         // Проверяем, является ли ключ ссылкой на аватарку
                         if (key === 'Аватарка' && typeof value === 'string') {
-                            userInfoHTML += `<li class="list-group-item"><img src="${value}" alt="Аватарка" style="width: 100px; height: 100px;"></li>`;
+                            userInfoHTML += `<li class="list-group-item"><img src="${value}" alt="Аватарка" style="width: 100px; height: 100px;"></li>`
                         } else if (key === 'Онлайн' && typeof value === 'string') {
-                            userInfoHTML += `<li class="list-group-item">${value}</li>`;
+                            userInfoHTML += `<li class="list-group-item">${value}</li>`
                         } else if (Array.isArray(value)) {
                             // Обработка массива объектов (например, карьера)
-                            value = value.map(obj => JSON.stringify(obj)).join(', ');
-                            userInfoHTML += `<li class="list-group-item">${key}: ${value}</li>`;
+                            value = value.map(obj => JSON.stringify(obj)).join(', ')
+                            userInfoHTML += `<li class="list-group-item">${key}: ${value}</li>`
                         } else {
                             // Обработка простых свойств
-                            userInfoHTML += `<li class="list-group-item">${key}: ${value}</li>`;
+                            userInfoHTML += `<li class="list-group-item">${key}: ${value}</li>`
                         }
                     }
                 } else {
-                    userInfoHTML += '<li>Информация отсутствует.</li>';
+                    userInfoHTML += '<li>Информация отсутствует.</li>'
                 }
-                userInfoHTML += '</ul>';
+                userInfoHTML += '</ul>'
 
                 // Добавляем диаграму категорий
-                userInfoHTML += '<div class="w-100 pt-5"><canvas id="myChart" class="mx-auto" height="500"></canvas></div>';
+                userInfoHTML += '<div class="w-100 pt-5"><canvas id="myChart" class="mx-auto" height="500"></canvas></div>'
                 
-                userInfoHTML += '</div>';
-                return userInfoHTML;
+                userInfoHTML += '</div>'
+                return userInfoHTML
             }
 
             // Рисует колонку со списком
             function createListSection(title, items, className, matchingGroups, isSubscription = true) {
-                let listHTML = `<div class="${className}"><h2 class="underline pt-1">${title}</h2><ul>`;
+                let listHTML = `<div class="${className}"><h2 class="underline pt-1">${title}</h2><ul>`
 
                 if (typeof items === 'object' && items !== null && items.order && Array.isArray(items.order)) {
                     // Сортировка элементов в соответствии с порядком в items.order
                     items.order.forEach(itemId => {
                         if (items.hasOwnProperty(itemId)) {
-                            const item = items[itemId];
-                            const isMatched = matchingGroups && matchingGroups[itemId];
-                            const style = isMatched ? `style="color: ${matchingGroups[itemId]}; font-weight: bold;"` : '';
+                            const item = items[itemId]
+                            const isMatched = matchingGroups && matchingGroups[itemId]
+                            const style = isMatched ? `style="color: ${matchingGroups[itemId]}; font-weight: bold;"` : ''
                             
-                            let content = isSubscription ? `${item.name} (ID: ${itemId})` : `<span id="group_${itemId}">ID: ${itemId}</span>`;
+                            let content = isSubscription ? `${item.name} (ID: ${itemId})` : `<span id="group_${itemId}">ID: ${itemId}</span>`
 
                             if (!isSubscription && item.dates && Array.isArray(item.dates)) {
-                                content += `: ${item.dates.join(', ')}`;
+                                content += `: ${item.dates.join(', ')}`
                             }
 
-                            const categorySpan = isSubscription ? `<span id="category_${itemId}"></span>` : '';
-                            listHTML += `<li ${style}>${content} ${categorySpan}</li>`;
+                            const categorySpan = isSubscription ? `<span id="category_${itemId}"></span>` : ''
+                            listHTML += `<li ${style}>${content} ${categorySpan}</li>`
                         }
                     });
                 } else {
-                    listHTML += `<li>Информация отсутствует.</li>`;
+                    listHTML += `<li>Информация отсутствует.</li>`
                 }
 
-                listHTML += '</ul></div>';
-                return listHTML;
+                listHTML += '</ul></div>'
+                return listHTML
             }
 
 
             // Находит совпадения в подписках и репостах, подсвечивает их
             function findMatchingGroups(subscriptions, reposts) {
-                const matchingGroups = {};
+                const matchingGroups = {}
 
                 // Проверяем, являются ли subscriptions и reposts объектами
                 if (typeof subscriptions === 'object' && subscriptions !== null &&
@@ -422,20 +425,44 @@
                         if (subscriptions.hasOwnProperty(subId)) {
                             // Проверяем, существует ли репост с таким же ID, как у подписки
                             if (reposts.hasOwnProperty(subId)) {
-                                matchingGroups[subId] = generateRandomColor();
+                                matchingGroups[subId] = generateRandomColor()
                             }
                         }
                     }
                 }
 
-                return matchingGroups;
+                return matchingGroups
             }
 
 
+            // Считает точность определения категории в %
+            // ...
+            function calculatePrecisionPercentages(precisionData) {
+                let totalKeywords = 0;
+                let precisionStrings = [];
 
-            // Получает категорию групп
+                // Считаем общее количество ключевых слов
+                for (let category in precisionData) {
+                    if (precisionData.hasOwnProperty(category)) {
+                        totalKeywords += precisionData[category];
+                    }
+                }
+
+                // Рассчитываем процентное соотношение для каждой категории и формируем строки
+                for (let category in precisionData) {
+                    if (precisionData.hasOwnProperty(category) && precisionData[category] > 0) {
+                        let percentage = (precisionData[category] / totalKeywords * 100).toFixed(2);
+                        precisionStrings.push(`${category} ${percentage}%`);
+                    }
+                }
+
+                return precisionStrings.join(', ');
+            }
+
+            // Получает категорию групп, подписок
+            // рендерит бэйдж с категорией
             function loadCategory(group_id) {
-                document.getElementById('category_' + group_id).innerHTML = '<div class="spinner-grow spinner-grow-sm" role="status"><span class="visually-hidden"></span></div>';
+                document.getElementById('category_' + group_id).innerHTML = '<div class="spinner-grow spinner-grow-sm" role="status"><span class="visually-hidden"></span></div>'
                 fetch('/api/generate_category.php', {
                     method: 'POST',
                     headers: {
@@ -445,17 +472,19 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    const color = categoryColors[data.category] || 'rgba(255, 255, 255, 1)'; // Задаем цвет по умолчанию, если категория не найдена
-                    document.getElementById('category_' + group_id).innerHTML = `<span class="badge" style="background-color: ${color}">${data.category}</span>`;
-                    updateCategoryCount(data.category);
-                    updateChart(myChart, categoryCounts);
+                    const color = categoryColors[data.category] || 'rgba(255, 255, 255, 1)' // Задаем цвет по умолчанию, если категория не найдена
+                    document.getElementById('category_' + group_id).innerHTML = `<span class="badge new-tooltip" style="background-color: ${color}" data-bs-toggle="tooltip" title="${calculatePrecisionPercentages(data.precision)}">${data.category}</span>`
+                    updateCategoryCount(data.category)
+                    updateChart(myChart, categoryCounts)
+                    initializeTooltips() // Инициализация tooltips
                 })
-                .catch(error => console.error('Ошибка:', error));
+                .catch(error => console.error('Ошибка:', error))
             }
 
             // Получает имя группы из репоста, и генерирует её категорию
+            // рендерит бэйдж с категорией
             function getGroup(group_id) {
-                document.getElementById('group_' + group_id).innerHTML = '<div class="spinner-grow spinner-grow-sm" role="status"><span class="visually-hidden"></span></div>';
+                document.getElementById('group_' + group_id).innerHTML = '<div class="spinner-grow spinner-grow-sm" role="status"><span class="visually-hidden"></span></div>'
                 fetch('/api/generate_category.php', {
                     method: 'POST',
                     headers: {
@@ -466,53 +495,175 @@
                 .then(response => response.json())
                 .then(data => {
                     const color = categoryColors[data.category] || 'rgba(255, 255, 255, 1)'; // Задаем цвет по умолчанию, если категория не найдена
-                    document.getElementById('group_' + group_id).innerHTML = `<span class="badge" style="background-color: ${color}">${data.category}</span> ${data.name} (ID: ${group_id})`;
-                    updateCategoryCount(data.category);
-                    updateChart(myChart, categoryCounts);
+                    document.getElementById('group_' + group_id).innerHTML = `<span class="badge new-tooltip" style="background-color: ${color}" data-bs-toggle="tooltip" title="${calculatePrecisionPercentages(data.precision)}">${data.category}</span>`
+                    updateCategoryCount(data.category)
+                    updateChart(myChart, categoryCounts)
+                    initializeTooltips() // Инициализация tooltips
                 })
-                .catch(error => console.error('Ошибка:', error));
+                .catch(error => console.error('Ошибка:', error))
             }
 
             // Показывает ошибку,
             // пользователь не существует или
             // профиль закрыт
             function errorUserNotFound(profile_interface) {
-                const isoTimestamp = new Date().toISOString();
+                const isoTimestamp = new Date().toISOString()
                 
                 // Создаем новый параграф
-                const errorParagraph = document.createElement('p');
-                errorParagraph.className = 'alert alert-danger alert-dismissible fade show'; // Задаем класс
-                errorParagraph.textContent = isoTimestamp + ' Произошла ошибка! Скорее всего ты пытаешься проанализировать закрытый или несуществующий профиль.'; // Используйте error.message для получения сообщения об ошибке
+                const errorParagraph = document.createElement('p')
+                errorParagraph.className = 'alert alert-danger alert-dismissible fade show' // Задаем класс
+                errorParagraph.textContent = isoTimestamp + ' Произошла ошибка! Скорее всего ты пытаешься проанализировать закрытый или несуществующий профиль.' // Используйте error.message для получения сообщения об ошибке
                 
                 // Создаем кнопку закрытия
-                const closeButton = document.createElement('button');
-                closeButton.setAttribute('type', 'button');
-                closeButton.className = 'btn-close';
-                closeButton.setAttribute('data-bs-dismiss', 'alert');
-                closeButton.setAttribute('aria-label', 'Close');
+                const closeButton = document.createElement('button')
+                closeButton.setAttribute('type', 'button')
+                closeButton.className = 'btn-close'
+                closeButton.setAttribute('data-bs-dismiss', 'alert')
+                closeButton.setAttribute('aria-label', 'Close')
 
                 // Добавляем кнопку закрытия в параграф
-                errorParagraph.appendChild(closeButton);
+                errorParagraph.appendChild(closeButton)
 
 
                 // Вставляем новый параграф в начало profile_interface
                 if (profile_interface.firstChild) {
-                    profile_interface.insertBefore(errorParagraph, profile_interface.firstChild);
+                    profile_interface.insertBefore(errorParagraph, profile_interface.firstChild)
                 } else {
-                    profile_interface.appendChild(errorParagraph);
+                    profile_interface.appendChild(errorParagraph)
                 }
 
                 // Скрываем анимацию загрузки и показываем profile_interface
-                loading.style.display = 'none';
-                profile_interface.style.display = 'block';
+                loading.style.display = 'none'
+                profile_interface.style.display = 'block'
+            }
+
+
+            // Рендерит анализ профиля пользователя
+            // ...
+            function renderProfile(data) {
+                // Обработка ответа от API
+                //console.log('access_token: ' + data.response.access_token);
+                //console.log('user_id: ' + data.response.user_id);
+                // Отправка запроса к API
+                fetch('/api/get_user.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'access_token=' + data.response.access_token + '&username_to_watch=' + data.response.user_id
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+
+                    let form = document.getElementById('authForm')
+                    let profile = document.getElementById('profile_refresh_global')
+                    let profile_interface = document.getElementById('profile')
+                    let responseData = data // Разбор JSON-ответа
+                    const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts)
+
+                    let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 10 минут</p>'
+
+                    contentHTML += '<div class="d-flex flex-row overflow-auto">'
+                    contentHTML += createUserInfoSection(responseData.user_info)
+                    contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4', matchingGroups)
+                    contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4', matchingGroups, false)
+                    contentHTML += '</div>'
+
+                    profile.classList.remove("form-signin")
+                    // Очищаем и добавляем новое содержимое в profile_interface
+                    profile_interface.innerHTML = contentHTML
+
+                    let ctx = document.getElementById('myChart').getContext('2d')
+                    myChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(categoryColors), // Массив названий категорий
+                        datasets: [{
+                            label: 'Подписок из категории',
+                            data: [], // Здесь данные для каждой категории
+                            backgroundColor: Object.values(categoryColors), // Массив цветов для каждой категории
+                            borderColor: Object.values(categoryColors).map(color => color.replace('0.2', '1')), // Темные границы для каждого цвета
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            },
+                        
+                        },
+                        maintainAspectRatio: false
+                    }
+                    })
+                    
+                    // Скрываем анимацию загрузки и показываем profile_interface
+                    form.style.display = 'none'
+                    loading.style.display = 'none'
+                    profile_interface.style.display = 'block'
+
+                    // Обновляем категории у подписок
+                    function processGroup(index, groups, callback) {
+                        let groupIds = Object.keys(groups) // Получаем массив ключей (ID групп) из объекта
+                        if (index < groupIds.length-1) { // здесь -1 для того чтобы пропустить массив order
+                            loadCategory(groupIds[index])
+                            setTimeout(() => processGroup(index + 1, groups, callback), 1000)
+                        } else if (callback) {
+                            callback() // Вызов callback после завершения всех итераций
+                        }
+                    }
+
+                    function processReposts(index, reposts, callback) {
+                        // Проверяем, является ли reposts объектом
+                        if (typeof reposts === 'object' && reposts !== null) {
+                            let repostIds = Object.keys(reposts) // Получаем массив ключей (ID групп) из объекта
+                            if (index < repostIds.length) {
+                                if (repostIds[index] !== 'order') { // Пропускаем ключ 'order', если он есть
+                                    getGroup(repostIds[index]) // Предполагается, что функция getGroup определена
+                                }
+                                setTimeout(() => processReposts(index + 1, reposts, callback), 1000)
+                            } else if (callback) {
+                                callback() // Вызов callback после завершения всех итераций
+                            }
+                        } else if (typeof reposts === 'string') {
+                            // Обработка случая, когда reposts - это строка
+                            console.error('Анализ: Не найдено ни одного репоста на стене пользователя, пропускаю.')
+                            if (callback) {
+                                callback()
+                            }
+                        }
+                    }
+
+                    // Сначала обрабатываем репосты, затем подписки
+                    processReposts(0, responseData.reposts, function() {
+                        processGroup(0, responseData.subscriptions)
+                    });
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    errorUserNotFound(profile_interface)
+                });
+            }
+
+            // Рендерит подсказки с точностью
+            // ...
+            function initializeTooltips() {
+                // Инициализируем tooltips только для новых элементов
+                const newTooltipTriggerList = [].slice.call(document.querySelectorAll('.new-tooltip'));
+                newTooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                    new bootstrap.Tooltip(tooltipTriggerEl);
+                    tooltipTriggerEl.classList.remove('new-tooltip'); // Удаляем класс, чтобы не инициализировать повторно
+                });
             }
 
 
 
         document.getElementById('submitButton').addEventListener('click', function() {
-            let form = document.getElementById('authForm');
-            let loading = document.getElementById('loading');
-            let profile = document.getElementById('profile');
+            let form = document.getElementById('authForm')
+            let loading = document.getElementById('loading')
+            let profile = document.getElementById('profile')
             let reqModal = new bootstrap.Modal(document.getElementById('reqModal'), {
                 keyboard: false,
                 backdrop: 'static'
@@ -520,12 +671,12 @@
 
             // Добавляем задержку перед открытием модального окна
             setTimeout(() => {
-                reqModal.show();
+                reqModal.show()
             }, 1500); // Задержка в 2 секунды
 
             // Замена формы на анимацию загрузки
-            form.style.display = 'none';
-            loading.style.display = 'block';
+            form.style.display = 'none'
+            loading.style.display = 'block'
 
             // Отправка запроса к API
             fetch('/api/auth.php', {
@@ -536,16 +687,16 @@
             .then(response => response.json())
             .then(data => {
                 // Обработка ответа от API
-                console.log(data);
+                console.log(data)
             })
             .catch(error => {
-                console.error('Ошибка:', error);
+                console.error('Ошибка:', error)
             })
             .finally(() => {
                 // Убираем анимацию загрузки после минимум 1 секунды
                 setTimeout(() => {
-                    loading.style.display = 'none';
-                    profile.style.display = 'block';
+                    loading.style.display = 'none'
+                    profile.style.display = 'block'
                 }, 2000);
             });
         });
@@ -553,18 +704,18 @@
         document.getElementById('addLoginButton').addEventListener('click', function(event) {
             event.preventDefault(); // Предотвращаем стандартное поведение кнопки (перезагрузку страницы)
 
-            let addLoginForm = document.getElementById('addLoginForm');
-            let formData = new FormData(addLoginForm);
-            let loading = document.getElementById('loading');
-            let profile = document.getElementById('profile_refresh_global');
-            let profile_interface = document.getElementById('profile');
+            let addLoginForm = document.getElementById('addLoginForm')
+            let formData = new FormData(addLoginForm)
+            let loading = document.getElementById('loading')
+            let profile = document.getElementById('profile_refresh_global')
+            let profile_interface = document.getElementById('profile')
             let addLoginModal = new bootstrap.Modal(document.getElementById('addLoginModal'), {
                 keyboard: false,
                 backdrop: 'static',
             });
 
-            loading.style.display = 'block';
-            profile_interface.style.display = 'none';
+            loading.style.display = 'block'
+            profile_interface.style.display = 'none'
 
             
             // Отправка запроса к API
@@ -574,28 +725,28 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
+                console.log(data)
 
                 if (data.status == 'error') {
-                    errorUserNotFound(profile_interface);
+                    errorUserNotFound(profile_interface)
                     return;
                 }
-                let responseData = data; // Разбор JSON-ответа
-                const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts);
+                let responseData = data // Разбор JSON-ответа
+                const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts)
 
-                let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 10 минут</p>';
+                let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 10 минут</p>'
 
-                contentHTML += '<div class="d-flex flex-row overflow-auto">';
-                contentHTML += createUserInfoSection(responseData.user_info);
-                contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4', matchingGroups);
-                contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4', matchingGroups, false);
-                contentHTML += '</div>';
+                contentHTML += '<div class="d-flex flex-row overflow-auto">'
+                contentHTML += createUserInfoSection(responseData.user_info)
+                contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4', matchingGroups)
+                contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4', matchingGroups, false)
+                contentHTML += '</div>'
 
-                profile.classList.remove("form-signin");
+                profile.classList.remove("form-signin")
                 // Очищаем и добавляем новое содержимое в profile_interface
-                profile_interface.innerHTML = contentHTML;
+                profile_interface.innerHTML = contentHTML
 
-                let ctx = document.getElementById('myChart').getContext('2d');
+                let ctx = document.getElementById('myChart').getContext('2d')
                 myChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
@@ -621,63 +772,63 @@
                 });
                 
                 // Скрываем анимацию загрузки и показываем profile_interface
-                loading.style.display = 'none';
-                profile_interface.style.display = 'block';
+                loading.style.display = 'none'
+                profile_interface.style.display = 'block'
 
                 // Обновляем категории у подписок
                 function processGroup(index, groups, callback) {
                     let groupIds = Object.keys(groups); // Получаем массив ключей (ID групп) из объекта
                     if (index < groupIds.length-1) { // здесь -1 для того чтобы пропустить массив order
-                        loadCategory(groupIds[index]);
-                        setTimeout(() => processGroup(index + 1, groups, callback), 1000);
+                        loadCategory(groupIds[index])
+                        setTimeout(() => processGroup(index + 1, groups, callback), 1000)
                     } else if (callback) {
-                        callback(); // Вызов callback после завершения всех итераций
+                        callback() // Вызов callback после завершения всех итераций
                     }
                 }
 
                 function processReposts(index, reposts, callback) {
                     // Проверяем, является ли reposts объектом
                     if (typeof reposts === 'object' && reposts !== null) {
-                        let repostIds = Object.keys(reposts); // Получаем массив ключей (ID групп) из объекта
+                        let repostIds = Object.keys(reposts) // Получаем массив ключей (ID групп) из объекта
                         if (index < repostIds.length) {
                             if (repostIds[index] !== 'order') { // Пропускаем ключ 'order', если он есть
-                                getGroup(repostIds[index]); // Предполагается, что функция getGroup определена
+                                getGroup(repostIds[index]) // Предполагается, что функция getGroup определена
                             }
-                            setTimeout(() => processReposts(index + 1, reposts, callback), 1000);
+                            setTimeout(() => processReposts(index + 1, reposts, callback), 1000)
                         } else if (callback) {
-                            callback(); // Вызов callback после завершения всех итераций
+                            callback() // Вызов callback после завершения всех итераций
                         }
                     } else if (typeof reposts === 'string') {
                         // Обработка случая, когда reposts - это строка
-                        console.error('Анализ: Не найдено ни одного репоста на стене пользователя, пропускаю.');
+                        console.error('Анализ: Не найдено ни одного репоста на стене пользователя, пропускаю.')
                         if (callback) {
-                            callback();
+                            callback()
                         }
                     }
                 }
 
                 // Сначала обрабатываем репосты, затем подписки
                 processReposts(0, responseData.reposts, function() {
-                    processGroup(0, responseData.subscriptions);
+                    processGroup(0, responseData.subscriptions)
                 });
 
 
             })
             .catch(error => {
-                console.error('Ошибка:', error);
-                errorUserNotFound(profile_interface);
+                console.error('Ошибка:', error)
+                errorUserNotFound(profile_interface)
             });
 
         });
 
         document.getElementById('addLoginForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Предотвращаем стандартное поведение формы
+            event.preventDefault() // Предотвращаем стандартное поведение формы
 
             // Программно "нажимаем" на кнопку
-            document.getElementById('addLoginButton').click();
+            document.getElementById('addLoginButton').click()
         });
         document.getElementById('addLoginModal').addEventListener('shown.bs.modal', function () {
-            document.getElementById('username_to_watch').focus();
+            document.getElementById('username_to_watch').focus()
         });
         </script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

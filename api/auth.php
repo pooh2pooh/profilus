@@ -4,13 +4,14 @@
     if (isset($_POST['email']) or isset($_POST['password'])) {
 
         echo json_encode(['status' => 'success', 'message' => 'Авторизация выполнена']);
-    } elseif (isset($_POST['silent_token']) && isset($_POST['uuid'])) {
+    } elseif (isset($_POST['silent_token']) && isset($_POST['uuid']) || 
+              isset($_GET['silent_token']) && isset($_GET['uuid'])) {
 
         // Здесь в идеале нужно сделать фильтрацию входных данных,
         // мы опустим это в данной версии продукта
         // ...
-        $silentToken = $_POST['silent_token'];
-        $uuid = $_POST['uuid'];
+        $silentToken = isset($_POST['silent_token']) ? $_POST['silent_token'] : $_GET['silent_token'];
+        $uuid = isset($_POST['uuid']) ? $_POST['uuid'] : $_GET['uuid'];
 
         // Обмен Silent token на Access token
         $response = exchangeSilentTokenForAccessToken($silentToken, $uuid);
