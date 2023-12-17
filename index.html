@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru" data-bs-theme="auto">
-    <head><script src="color-modes.js"></script>
+    <head><script src="js/color-modes.js"></script>
 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -103,9 +103,11 @@
 
 
         <!-- Custom styles for this template -->
-        <link href="avenir_next_cyr.css" rel="stylesheet">
-        <link href="sign-in.css" rel="stylesheet">
-        <link href="profilum.css" rel="stylesheet">
+        <link href="css/avenir_next_cyr.css" rel="stylesheet">
+        <link href="css/sign-in.css" rel="stylesheet">
+        <link href="css/profilum.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
     </head>
 
 
@@ -167,10 +169,9 @@
         <main class="form-signin w-100 m-auto" id="profile_refresh_global">
 
 
-            <!-- Форма авторизации -->
             <form id="authForm">
-                <img class="mb-0" src="profilum-logo.svg" alt="" width="300">
-                <h1 class="small text-muted pt-0 mb-3 fw-normal">для профориентации, верси 0.1 бета</h1>
+                <img class="mb-0" src="images/profilum-logo.svg" alt="" width="300">
+                <h1 class="small text-muted pt-0 mb-3 fw-normal">для профориентации, <strong>версия 0.1.2 бета</strong></h1>
 
                 <div class="alert alert-warning alert-dismissible" role="alert">
                     <h4 class="alert-heading">Добро пожаловать!</h4>
@@ -179,9 +180,13 @@
                     <p class="mb-0">Тестовый аккаунт<br>
                     Логин: <code>test@test.ru</code><br>
                     Пароль: <code>1234</code>
+                    </code></p><br>
+                    <p class="mb-0">Административный аккаунт<br>
+                    Логин: <code>admin@admin.ru</code><br>
+                    Пароль: <code>12345</code>
                     </code></p>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
+                </div>
 
                 <div class="form-floating">
                     <input type="email" class="form-control" id="floatingInput" name="email" placeholder="name@example.com">
@@ -201,14 +206,14 @@
                 <button class="btn btn-success bg-gradient rounded-pill w-100 py-2" type="button" id="submitButton">Вход</button>
                 <div class="pt-1" id="vkOneTapButtonContainer"></div>
                 <p class="mt-5 mb-3 text-body-secondary">&copy; 2023 ЛЦТ.Якутия</p>
-                <img class="mx-4" src="logo_ltc.svg" alt="" width="90">
-                <img class="mx-4" src="aim_lcty.svg" alt="" width="90">
+                <img class="mx-4" src="images/logo_ltc.svg" alt="" width="90">
+                <img class="mx-4" src="images/aim_lcty.svg" alt="" width="90">
             </form>
 
 
             <!-- Лоадер -->
             <div class="w-100" id="loading" style="display:none;">
-                <img src="loading.gif" alt="Загрузка..." width="128"/>
+                <img src="images/loading.gif" alt="Загрузка..." width="128"/>
                 <span class="ps-4 pt-5 lead">Загружаю...</span>
             </div>
 
@@ -268,7 +273,7 @@
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title"><img class="mb-0" src="profilum-logo.svg" alt="" width="120"></h5>
+                            <h5 class="modal-title"><img class="mb-0" src="images/profilum-logo.svg" alt="" width="120"></h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -284,9 +289,9 @@
             </div>
 
         </main>
-        <script src="bootstrap.bundle.min.js"></script>
+        <script src="js/bootstrap.bundle.min.js"></script>
         <script src="https://unpkg.com/@vkontakte/superappkit@1.57.0/dist/index-umd.js"></script>
-        <script src="onetap.js"></script>
+        <script src="js/onetap.js"></script>
 
         <script>
 
@@ -295,13 +300,21 @@
 
             let myChart = ''
             const generateRandomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16)
+
+            // Категории и их цвета
             const categoryColors = {
-                'Неизвестная категория': 'rgba(255, 255, 255, 0.8)',
+                'Неизвестная категория': 'rgba(0, 0, 0, 1)',
                 'IT': 'rgba(255, 99, 132, 0.4)',
+                'Искусственный интеллект': 'rgba(132, 99, 255, 0.4)',
+                'Аналитика': 'rgba(99, 255, 132, 0.4)',
+                'Производство': 'rgba(126, 34, 230, 0.4)',
+                'Технологии': 'rgba(188, 156, 26, 0.4)',
+                'Геология': 'rgba(141, 140, 127, 0.4)',
                 'Продажи': 'rgba(22, 160, 133, 0.4)',
                 'Инженерия': 'rgba(241, 196, 15, 0.4)',
                 'Медицина': 'rgba(155, 89, 182, 0.4)',
                 'Образование': 'rgba(52, 152, 219, 0.4)',
+                'Психология': 'rgba(80, 44, 62, 0.4)',
                 'Музыка': 'rgba(230, 126, 34, 0.4)',
                 'Городские сообщества': 'rgba(56, 214, 123, 0.4)',
                 'Машины': 'rgba(172, 214, 93, 0.4)',
@@ -319,11 +332,117 @@
             let categoryCounts = {}
 
 
+            // Профессии и их категории подписок
+            const professionsToCategories = {
+                'Разработчики систем искусственного интеллекта': ['IT', 'Программирование', 'Искусственный интеллект'],
+                'Системные аналитики': ['IT', 'Аналитика'],
+                'Менеджеры маркетплейсов': ['Бизнес', 'Продажи', 'Компании'],
+                'Инженеры-технологи': ['Инженерия', 'Производство', 'Машины'],
+                'Электромеханики': ['Инженерия', 'Машины', 'Технологии'],
+                'Маркшейдеры': ['Инженерия', 'Геология'],
+                'Медсестры': ['Медицина', 'Образование'],
+                'Врачи': ['Медицина', 'Образование'],
+                'Воспитатели': ['Образование', 'Психология'],
+                'Учителя': ['Образование', 'Психология']
+            }
+            let professionScores = {}
+
+
+            // Весовые коэффициенты для категорий в контексте каждой профессии
+            const categoryWeights = {
+                "Разработчики систем искусственного интеллекта": {
+                    "IT": 2, "Программирование": 1.5, "Искусственный интеллект": 2, "Linux": 0.5, "Фронтенд": 0.3, "Бэкенд": 0.3
+                },
+                "Системные аналитики": {
+                    "IT": 2, "Программирование": 1.5, "Аналитика": 2, "Бизнес": 0.5
+                },
+                "Менеджеры маркетплейсов": {
+                    "Бизнес": 2, "Продажи": 1.5, "Компании": 0.5
+                },
+                "Инженеры-технологи": {
+                    "Инженерия": 2, "Производство": 1.5, "Машины": 0.5
+                },
+                "Электромеханики": {
+                    "Инженерия": 2, "Машины": 1.5, "Технологии": 1
+                },
+                "Маркшейдеры": {
+                    "Инженерия": 2, "Геология": 1.5, "Городские сообщества": 0.5
+                },
+                "Медсестры": {
+                    "Медицина": 2, "Образование": 0.5
+                },
+                "Врачи": {
+                    "Медицина": 2, "Образование": 0.5
+                },
+                "Воспитатели": {
+                    "Образование": 2, "Психология": 1
+                },
+                "Учителя": {
+                    "Образование": 2, "Психология": 1
+                }
+                // Другие профессии...
+            }
+            let sortedProfessions = {}
+
+
+            // Функция для создания HTML-кода карточки профессии
+            function createProfessionCard(profession) {
+                let cover
+                if (profession == 'Разработчики систем искусственного интеллекта') {
+                    cover = 'dev-ai.jpg'
+                } else if (profession == 'Системные аналитики') {
+                    cover = 'analytic.jpg'
+                } else if (profession == 'Менеджеры маркетплейсов') {
+                    cover = 'manager.jpg'
+                } else if (profession == 'Инженеры-технологи') {
+                    cover = 'tehnolog.jpg'
+                } else if (profession == 'Электромеханики') {
+                    cover = 'mehanik.jpg'
+                } else if (profession == 'Маркшейдеры') {
+                    cover = 'marksheyder.png'
+                } else if (profession == 'Медсестры') {
+                    cover = 'medsestra.png'
+                } else if (profession == 'Врачи') {
+                    cover = 'vrach.jpg'
+                } else if (profession == 'Воспитатели') {
+                    cover = 'vospitatel.webp'
+                } else if (profession == 'Учителя') {
+                    cover = 'uchilka.jpg'
+                } else {
+                    cover = 'placeholder.png'
+                }
+                return `
+                    <div class="col-12 col-md-4 col-lg-3 col-xl-2 card animate__animated animate__slideInLeft p-1 m-1">
+                        <img src="images/${cover}" class="card-img img-fluid" alt="${profession}">
+                        <div class="card-img-overlay">
+                            <h6 class="text-center card-title bg-info rounded-pill">${profession}</h6>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Функция для обновления блока с рекомендациями
+            function updateRecommendations() {
+                let recommendationsDiv = document.getElementById('recommendations');
+                if (!recommendationsDiv) return;
+
+                // Создаем временный контейнер для нового содержимого
+                let newContent = document.createElement('div');
+
+                // Добавляем карточки профессий во временный контейнер
+                sortedProfessions.forEach(profession => {
+                    newContent.innerHTML += createProfessionCard(profession);
+                });
+
+                // Заменяем старое содержимое новым с анимацией
+                recommendationsDiv.innerHTML = newContent.innerHTML;
+            }
+
             
 
             // Считаем и запоминаем все категории подписок
             function updateCategoryCount(category) {
-                if (category == '') {
+                if (category == '' || category == 'undefined') {
                     category = 'Неизвестная категория'
                 }
 
@@ -332,6 +451,26 @@
                 } else {
                     categoryCounts[category] = 1
                 }
+
+                // Расчет рекомендаций
+                let professionScores = {};
+                for (let profession in professionsToCategories) {
+                    let categories = professionsToCategories[profession];
+                    let weights = categoryWeights[profession];
+                    professionScores[profession] = categories.reduce((sum, category) => {
+                        let weight = weights[category] || 1; // Используем вес категории
+                        return sum + ((categoryCounts[category] || 0) * weight);
+                    }, 0);
+                }
+
+                // Сортировка профессий по рекомендациям
+                sortedProfessions = Object.keys(professionScores).sort((a, b) => {
+                    return professionScores[b] - professionScores[a];
+                });
+
+                // Вывод отсортированных профессий
+                console.log(sortedProfessions);
+                updateRecommendations();
             }
 
 
@@ -562,7 +701,10 @@
                     let responseData = data // Разбор JSON-ответа
                     const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts)
 
-                    let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 10 минут</p>'
+                    let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 5 минут</p>'
+
+                    contentHTML += '<div id="recommendations" class="d-flex flex-row flex-nowrap overflow-auto mb-5">'
+                    contentHTML += '</div>'
 
                     contentHTML += '<div class="d-flex flex-row overflow-auto">'
                     contentHTML += createUserInfoSection(responseData.user_info)
@@ -592,11 +734,10 @@
                         plugins: {
                             legend: {
                                 position: 'bottom',
-                            },
-                        
+                            },                        
                         },
-                        maintainAspectRatio: false
-                    }
+                        
+                    },
                     })
                     
                     // Скрываем анимацию загрузки и показываем profile_interface
@@ -734,7 +875,10 @@
                 let responseData = data // Разбор JSON-ответа
                 const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts)
 
-                let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 10 минут</p>'
+                let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 5 минут</p>'
+                
+                contentHTML += '<div id="recommendations" class="d-flex flex-row flex-nowrap overflow-auto mb-5">'
+                contentHTML += '</div>'
 
                 contentHTML += '<div class="d-flex flex-row overflow-auto">'
                 contentHTML += createUserInfoSection(responseData.user_info)
