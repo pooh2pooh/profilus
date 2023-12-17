@@ -30,7 +30,7 @@
         // Получение информации о пользователе
         $user_response = $vk->users()->get($access_token, [
             'user_ids' => [$user_id],
-            'fields' => ['career', 'education', 'first_name', 'last_name', 'photo_100', 'online', 'city', 'screen_name']
+            'fields' => ['career', 'education', 'first_name', 'last_name', 'photo_100', 'online', 'city', 'screen_name', 'bdate']
         ]);
     } catch (\VK\Exceptions\Api\VKApiException $e) {
         // Обработка исключений, связанных с API
@@ -58,6 +58,22 @@
             // ... Другие поля ...
         );
 
+        // Рассчитываем возраст пользователя
+        if (isset($user_response[0]['bdate'])) {
+            $bdate = explode('.', $user_response[0]['bdate']);
+            if (count($bdate) === 3) {
+                // Полная дата рождения (день, месяц, год)
+                $birthDate = DateTime::createFromFormat('d.m.Y', $user_response[0]['bdate']);
+                $currentDate = new DateTime();
+                $age = $currentDate->diff($birthDate)->y;
+                $result['user_info']['Возраст'] = $age;
+            } else {
+                // Только день и месяц
+                $result['user_info']['День_Рождения'] = $user_response[0]['bdate'];
+            }
+        } else {
+            $result['user_info']['День_Рождения'] = 'Не указан';
+        }
 
 
         try {

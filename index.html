@@ -180,10 +180,6 @@
                     <p class="mb-0">Тестовый аккаунт<br>
                     Логин: <code>test@test.ru</code><br>
                     Пароль: <code>1234</code>
-                    </code></p><br>
-                    <p class="mb-0">Административный аккаунт<br>
-                    Логин: <code>admin@admin.ru</code><br>
-                    Пароль: <code>12345</code>
                     </code></p>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -298,6 +294,8 @@
             let tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
             let tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
+            let userInfo = {}
+
             let myChart = ''
             const generateRandomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16)
 
@@ -347,6 +345,16 @@
             }
             let professionScores = {}
 
+            // Профессии которые требуют высшего образования
+            function professionRequiresVO(profession) {
+                // Список профессий, требующих ВО
+                const professionsRequiringVO = [
+                    'Разработчики систем искусственного интеллекта', 'Системные аналитики', 'Менеджеры маркетплейсов',
+                    'Инженеры-технологи', 'Электромеханики', 'Маркшейдеры', 'Врачи', 'Учителя'
+                ]
+                return professionsRequiringVO.includes(profession)
+            }
+
 
             // Весовые коэффициенты для категорий в контексте каждой профессии
             const categoryWeights = {
@@ -383,62 +391,177 @@
                 // Другие профессии...
             }
             let sortedProfessions = {}
+            let previousSortedProfessions = [];
 
+
+            function getEducationLevelByAge(age) {
+                if (age >= 16) { // Предполагаем, что пользователь в 10-11 классе или старше
+                    return 'ВО';
+                } else { // Пользователь в 9 классе или младше
+                    return 'СПО';
+                }
+            }
+
+
+            // Объект с данными о профессиях
+            const professionData = {
+                'Разработчики систем искусственного интеллекта': { 
+                    id: 1, 
+                    cover: 'dev-ai.jpg', 
+                    education: 'ВО',
+                    description: 'Требуют глубоких знаний в области компьютерных наук, математики, и, возможно, специализированных областей, связанных с искусственным интеллектом.',
+                    prolog: 'Ты любишь фильмы про роботов? Представь, что ты можешь создавать умные системы, которые помогут людям в будущем. Работа разработчика ИИ - это как быть реальным волшебником в мире технологий. Ты можешь работать над умными чат-ботами, которые общаются как настоящие люди, или создавать системы, помогающие врачам диагностировать болезни. Круто, правда?',
+                    institute: '<ul class="list-group"><li class="list-group-item">Совсем скоро мы сюда что-нибудь добавим</li></ul>'
+                },
+                'Системные аналитики': { 
+                    id: 2, 
+                    cover: 'analytic.jpg', 
+                    education: 'ВО',
+                    description: 'Необходимо высшее образование в области информационных технологий или смежных дисциплин.',
+                    prolog: 'Это как быть детективом, но в мире компьютеров. Ты анализируешь, как работает система, и находишь способы её улучшить. Можешь работать в крупной IT-компании, помогая делать их программы лучше и удобнее для пользователей. Или представь, что ты помогаешь банку защитить данные клиентов от хакеров!',
+                    institute: '<ul class="list-group"><li class="list-group-item">Международный колледж информационных технологий IThub college, мультиканальные продажи, 1г 10 месяцев обучения (https://msk.postupi.online/ssuz/mezhdunarodniy-kolledzh-informatsionnykh-tekhnologiy-ithub-college/programma-spo/886/varianti/)</li><li class="list-group-item">РАНХиГС, технологии продаж и цифровой маркетинг, 4 года обучения (https://msk.postupi.online/vuz/vshku-ranhigs/variant-programmi/57304/#free)</li><li class="list-group-item">Название программы: менеджмент в маркетплейсах, формат и сроки обучения: дистанционно из любого города РФ, 3 месяца (https://vado-dpo.ru/kursy/menedzher_marketplejsov)</li></ul>'
+                },
+                'Менеджеры маркетплейсов': { 
+                    id: 3, 
+                    cover: 'manager.jpg', 
+                    education: 'ВО',
+                    description: 'Часто требуется высшее образование в области бизнеса, маркетинга или смежных областей.',
+                    prolog: 'Ты знаешь, как в интернет-магазинах всё удобно расположено? Вот менеджер маркетплейса делает так, чтобы покупателям было легко найти и купить товар. Это как быть капитаном корабля в море интернет-торговли. Ты можешь работать в таких крутых местах, как Ozon или AliExpress!',
+                    institute: '<ul class="list-group"><li class="list-group-item">Совсем скоро мы сюда что-нибудь добавим</li></ul>'
+                },
+                'Инженеры-технологи': { 
+                    id: 4, 
+                    cover: 'tehnolog.jpg', 
+                    education: 'ВО' ,
+                    description: 'Требуют высшего технического образования.',
+                    prolog: 'Это те, кто делает будущее руками. Ты можешь создавать новые гаджеты, улучшать машины или даже разрабатывать космические технологии. Представь, что ты работаешь над созданием нового электромобиля или участвуешь в проекте по исследованию Марса!',
+                    institute: '<ul class="list-group"><li class="list-group-item">Чеченский государственный колледж, Инженер-технолог по качеству, 2г 10 месяцев обучения (https://vuzopedia.ru/ssuzy/chechenskiy-gosudarstvennyy-kolledzh/professii/465)</li><li class="list-group-item">Московский государственный университет геодезии и картографии, Инженер-технолог по качеству «Управление качеством в топографо-геодезическом производстве», 4 года обучения (https://vuzopedia.ru/vuz/530/professii/465)</li><li class="list-group-item">Название программы: Инженер-технолог, формат и сроки обучения: дистанционно из любого города РФ (+ поддержка куратора), 7 месяцев или 3,5 экстерном (https://ipo.msk.ru/professionalnaja-perepodgotovka/stroitelstvo/inzhener-tehnolog/)</li></ul>'
+                },
+                'Электромеханики': { 
+                    id: 5, 
+                    cover: 'mehanik.jpg', 
+                    education: 'ВО',
+                    description: 'В зависимости от специализации могут требовать высшего образования, особенно в области электроинженерии.',
+                    prolog: 'Ты как волшебник, который управляет электричеством. Можешь работать в крупных промышленных компаниях, создавая и обслуживая машины, которые делают всё от смартфонов до автомобилей. Или представь, что ты помогаешь в создании новых аттракционов в парках развлечений!',
+                    institute: '<ul class="list-group"><li class="list-group-item">Воронежский государственный промышленно-технологический колледж, электромеханик по лифтам, 2г 10 месяцев обучения (https://vuzopedia.ru/spo/programs/kvalificirovannyh-rabochikh/elektromekhanik-po-liftam/varianty)</li><li class="list-group-item">Московский Энергетический Институт (НИУ МЭИ), Электроэнергетика и электротехника, 4 года обучения (https://vuzopedia.ru/vuz/385/programs/bakispec/1738)</li><li class="list-group-item">Название программы: Электромеханика, формат и сроки обучения: 3 месяца, дистанционно из любого города РФ (https://электромеханика.профессиональный-стандарт.рф)</li></ul>'
+                },
+                'Маркшейдеры': { 
+                    id: 6, 
+                    cover: 'marksheyder.png', 
+                    education: 'ВО',
+                    description: 'Требуют высшего образования в области геологии или горного дела.',
+                    prolog: 'Это как быть исследователем под землёй. Ты изучаешь недра, чтобы помочь находить полезные ископаемые или строить безопасные туннели. Можешь работать в крупных горнодобывающих компаниях или участвовать в создании новых метро!',
+                    institute: '<ul class="list-group"><li class="list-group-item">Уральский государственный колледж имени И.И. Ползунова, Маркшейдерское дело, 3г 10 месяцев обучения (https://college.edunetwork.ru/66/11/c2866/specs/)</li><li class="list-group-item">РУДН, Маркшейдерское дело, 5.5 лет обучения (https://vuzopedia.ru/vuz/185/programs/bakispec/740)</li><li class="list-group-item">Название программы: Маркшейдерское дело, формат и сроки обучения: дистанционно в любом городе РФ, 3 месяца (https://маркшейдерское-дело.маэо.рф)</li></ul>'
+                },
+                'Медсестры': { 
+                    id: 7, 
+                    cover: 'medsestra.png', 
+                    education: 'СПО',
+                    description: 'Обычно требуют среднего медицинского образования, хотя существуют и программы высшего образования.',
+                    prolog: 'Ты как супергерой, который спасает жизни. Врачи и медсестры - это настоящие волшебники в белых халатах. Ты можешь работать в больнице, помогая пациентам выздоравливать, или участвовать в научных исследованиях, чтобы найти лекарства от новых болезней.',
+                    institute: '<ul class="list-group"><li class="list-group-item">Медицинский колледж №1  «Лечебное дело» 4 года обучения (https://www.ucheba.ru/program/54399/1)</li><li class="list-group-item">Первый МГМУ им. И.М. Сеченова Минздрава России (Сеченовский Университет) "Сестринское дело" 4 года обучение (https://www.ucheba.ru/program/164949/1)</li><li class="list-group-item">Международный центр профессионального образования "Сестринское дело" 4 месяца (https://www.ucheba.ru/program/784307)</li></ul>'
+                },
+                'Врачи': { 
+                    id: 8, 
+                    cover: 'vrach.jpg', 
+                    education: 'ВО',
+                    description: 'Определенно требуют высшего медицинского образования.',
+                    prolog: 'Ты как супергерой, который спасает жизни. Врачи и медсестры - это настоящие волшебники в белых халатах. Ты можешь работать в больнице, помогая пациентам выздоравливать, или участвовать в научных исследованиях, чтобы найти лекарства от новых болезней.',
+                    institute: '<ul class="list-group"><li class="list-group-item">Совсем скоро мы сюда что-нибудь добавим</li></ul>'
+                },
+                'Воспитатели': { 
+                    id: 9, 
+                    cover: 'vospitatel.webp', 
+                    education: 'СПО',
+                    description: 'Могут работать с дипломом среднего специального образования, но в некоторых случаях требуется высшее педагогическое образование.',
+                    prolog: 'Ты как ключ к новому миру для детей. Помогаешь им узнавать что-то новое каждый день. Можешь работать в детском саду, делая детство весёлым и интересным, или быть учителем в школе, открывая перед учениками двери в мир знаний и науки.',
+                    institute: '<ul class="list-group"><li class="list-group-item">Совсем скоро мы сюда что-нибудь добавим</li></ul>'
+                },
+                'Учителя': { 
+                    id: 10, 
+                    cover: 'uchilka.jpg', 
+                    education: 'ВО',
+                    description: 'В большинстве стран требуется высшее образование, но в некоторых контекстах (например, начальное образование или помощники учителей) может быть достаточно СПО.',
+                    prolog: 'Ты как ключ к новому миру для детей. Помогаешь им узнавать что-то новое каждый день. Можешь работать в детском саду, делая детство весёлым и интересным, или быть учителем в школе, открывая перед учениками двери в мир знаний и науки.',
+                    institute: '<ul class="list-group"><li class="list-group-item">Совсем скоро мы сюда что-нибудь добавим</li></ul>'
+                },
+                // Другие профессии...
+            }
+
+
+            // Функция для создания HTML-кода модального окна
+            function createProfessionModal(profession, data) {
+                return `
+                    <div class="modal fade" id="modal-${data.id}" tabindex="-1" aria-labelledby="modalLabel-${data.id}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header" style="background-image: url('images/${data.cover}'); background-size: cover;">
+                                    <h5 class="modal-title" id="modalLabel-${data.id}">${profession}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>${data.description}</p>
+                                    <br>
+                                    <p class="lead lh-sm p-1">${data.prolog}</p>
+                                    <br>
+                                    <h5>Варианты обучения</h5>
+                                    <p>${data.institute}</p>                                    
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
 
             // Функция для создания HTML-кода карточки профессии
             function createProfessionCard(profession) {
-                let cover
-                if (profession == 'Разработчики систем искусственного интеллекта') {
-                    cover = 'dev-ai.jpg'
-                } else if (profession == 'Системные аналитики') {
-                    cover = 'analytic.jpg'
-                } else if (profession == 'Менеджеры маркетплейсов') {
-                    cover = 'manager.jpg'
-                } else if (profession == 'Инженеры-технологи') {
-                    cover = 'tehnolog.jpg'
-                } else if (profession == 'Электромеханики') {
-                    cover = 'mehanik.jpg'
-                } else if (profession == 'Маркшейдеры') {
-                    cover = 'marksheyder.png'
-                } else if (profession == 'Медсестры') {
-                    cover = 'medsestra.png'
-                } else if (profession == 'Врачи') {
-                    cover = 'vrach.jpg'
-                } else if (profession == 'Воспитатели') {
-                    cover = 'vospitatel.webp'
-                } else if (profession == 'Учителя') {
-                    cover = 'uchilka.jpg'
-                } else {
-                    cover = 'placeholder.png'
-                }
+                const data = professionData[profession] || { id: 0, cover: 'placeholder.png', education: 'Неизвестно' }
+                const bgColor = data.education === 'ВО' ? 'bg-info' : 'bg-warning'
+
                 return `
-                    <div class="col-12 col-md-4 col-lg-3 col-xl-2 card animate__animated animate__slideInLeft p-1 m-1">
-                        <img src="images/${cover}" class="card-img img-fluid" alt="${profession}">
+                    <a href="#" class="col-12 col-md-4 col-lg-3 col-xl-2 card animate__animated animate__slideInLeft p-1 m-1" data-bs-toggle="modal" data-bs-target="#modal-${data.id}">
+                        <img src="images/${data.cover}" class="card-img img-fluid" alt="${profession}">
                         <div class="card-img-overlay">
-                            <h6 class="text-center card-title bg-info rounded-pill">${profession}</h6>
+                            <h6 class="text-center card-title ${bgColor} rounded-pill">${profession}</h6>
                         </div>
-                    </div>
-                `;
+                    </a>
+                    ${createProfessionModal(profession, data)}
+                `
             }
+
+
 
             // Функция для обновления блока с рекомендациями
             function updateRecommendations() {
-                let recommendationsDiv = document.getElementById('recommendations');
-                if (!recommendationsDiv) return;
+                let recommendationsDiv = document.getElementById('recommendations')
+                if (!recommendationsDiv) return
 
                 // Создаем временный контейнер для нового содержимого
-                let newContent = document.createElement('div');
+                let newContent = document.createElement('div')
 
                 // Добавляем карточки профессий во временный контейнер
                 sortedProfessions.forEach(profession => {
-                    newContent.innerHTML += createProfessionCard(profession);
+                    newContent.innerHTML += createProfessionCard(profession)
                 });
 
                 // Заменяем старое содержимое новым с анимацией
-                recommendationsDiv.innerHTML = newContent.innerHTML;
+                recommendationsDiv.innerHTML = newContent.innerHTML
             }
 
-            
+
+
+            // Сравнивает массивы (для обновления сортировки рекомендаций)
+            function arraysEqual(arr1, arr2) {
+                if (arr1.length !== arr2.length) return false
+                for (let i = 0; i < arr1.length; i++) {
+                    if (arr1[i] !== arr2[i]) return false
+                }
+                return true;
+            }
+
 
             // Считаем и запоминаем все категории подписок
             function updateCategoryCount(category) {
@@ -453,24 +576,40 @@
                 }
 
                 // Расчет рекомендаций
-                let professionScores = {};
+                let professionScores = {}
+                let userAge = 0
+                if (userInfo['Возраст']) {
+                    userAge = userInfo['Возраст'] // Пример возраста пользователя
+                }
+                let educationLevel = getEducationLevelByAge(userAge)
+
                 for (let profession in professionsToCategories) {
-                    let categories = professionsToCategories[profession];
-                    let weights = categoryWeights[profession];
+                    let categories = professionsToCategories[profession]
+                    let weights = categoryWeights[profession]
+                    let educationPriority = (educationLevel === 'ВО' && professionRequiresVO(profession)) ? 1.2 : 1 // Увеличиваем приоритет для ВО
+                    // console.log('Возраст ' + userAge)
+                    // console.log('Вероятное образование ' + educationLevel)
+                    console.log('Коэфициент для ' + profession + ' установлен в ' + educationPriority)
+
                     professionScores[profession] = categories.reduce((sum, category) => {
-                        let weight = weights[category] || 1; // Используем вес категории
-                        return sum + ((categoryCounts[category] || 0) * weight);
-                    }, 0);
+                        let weight = weights[category] || 1
+                        return sum + ((categoryCounts[category] || 0) * weight)
+                    }, 0) * educationPriority
                 }
 
                 // Сортировка профессий по рекомендациям
                 sortedProfessions = Object.keys(professionScores).sort((a, b) => {
-                    return professionScores[b] - professionScores[a];
-                });
+                    return professionScores[b] - professionScores[a]
+                })
 
-                // Вывод отсортированных профессий
-                console.log(sortedProfessions);
-                updateRecommendations();
+                // Проверяем, изменился ли порядок профессий
+                if (!arraysEqual(sortedProfessions, previousSortedProfessions)) {
+                    // Вывод отсортированных профессий
+                    console.log(sortedProfessions)
+
+                    updateRecommendations()
+                    previousSortedProfessions = [...sortedProfessions] // Обновляем предыдущее состояние
+                }
             }
 
 
@@ -497,9 +636,12 @@
 
                         // Проверяем, является ли ключ ссылкой на аватарку
                         if (key === 'Аватарка' && typeof value === 'string') {
-                            userInfoHTML += `<li class="list-group-item"><img src="${value}" alt="Аватарка" style="width: 100px; height: 100px;"></li>`
+                            userInfoHTML += `<li class="list-group-item"><img src="${value}" alt="Аватарка" style="width: 100px; height: 100px;"></li>`;
                         } else if (key === 'Онлайн' && typeof value === 'string') {
                             userInfoHTML += `<li class="list-group-item">${value}</li>`
+                        } else if ((key === 'Возраст' || key === 'День_Рождения') && typeof value === 'string') {
+                            // Обработка возраста или дня рождения
+                            userInfoHTML += `<li class="list-group-item">${key}: ${value}</li>`
                         } else if (Array.isArray(value)) {
                             // Обработка массива объектов (например, карьера)
                             value = value.map(obj => JSON.stringify(obj)).join(', ')
@@ -509,6 +651,11 @@
                             userInfoHTML += `<li class="list-group-item">${key}: ${value}</li>`
                         }
                     }
+
+                    userInfoHTML += `<li style="color:#cfcfcf" class="d-md-none p-3 lead">Рекомендованные профессии,<br>верху страницы.</li>`
+                    userInfoHTML += `<li style="color:#cfcfcf" class="d-md-none p-3 animate__animated animate__headShake animate__infinite">
+                                        Листай вправо,<br>если нужны подробности анализа →
+                                    </li>`
                 } else {
                     userInfoHTML += '<li>Информация отсутствует.</li>'
                 }
@@ -542,7 +689,8 @@
                             const categorySpan = isSubscription ? `<span id="category_${itemId}"></span>` : ''
                             listHTML += `<li ${style}>${content} ${categorySpan}</li>`
                         }
-                    });
+                    })
+
                 } else {
                     listHTML += `<li>Информация отсутствует.</li>`
                 }
@@ -577,25 +725,25 @@
             // Считает точность определения категории в %
             // ...
             function calculatePrecisionPercentages(precisionData) {
-                let totalKeywords = 0;
-                let precisionStrings = [];
+                let totalKeywords = 0
+                let precisionStrings = []
 
                 // Считаем общее количество ключевых слов
                 for (let category in precisionData) {
                     if (precisionData.hasOwnProperty(category)) {
-                        totalKeywords += precisionData[category];
+                        totalKeywords += precisionData[category]
                     }
                 }
 
                 // Рассчитываем процентное соотношение для каждой категории и формируем строки
                 for (let category in precisionData) {
                     if (precisionData.hasOwnProperty(category) && precisionData[category] > 0) {
-                        let percentage = (precisionData[category] / totalKeywords * 100).toFixed(2);
-                        precisionStrings.push(`${category} ${percentage}%`);
+                        let percentage = (precisionData[category] / totalKeywords * 100).toFixed(2)
+                        precisionStrings.push(`${category} ${percentage}%`)
                     }
                 }
 
-                return precisionStrings.join(', ');
+                return precisionStrings.join(', ')
             }
 
             // Получает категорию групп, подписок
@@ -701,7 +849,7 @@
                     let responseData = data // Разбор JSON-ответа
                     const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts)
 
-                    let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 5 минут</p>'
+                    let contentHTML = '<div id="processing" class="animate__animated animate__fadeInDown"><h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 5 минут</p></div>'
 
                     contentHTML += '<div id="recommendations" class="d-flex flex-row flex-nowrap overflow-auto mb-5">'
                     contentHTML += '</div>'
@@ -711,6 +859,11 @@
                     contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4', matchingGroups)
                     contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4', matchingGroups, false)
                     contentHTML += '</div>'
+
+                    // Грязный хак! :) Чтобы доступиться до возраста пользователя в рассчётах.
+                    // Скоро дедлайн :o
+                    // ...
+                    userInfo = responseData.user_info
 
                     profile.classList.remove("form-signin")
                     // Очищаем и добавляем новое содержимое в profile_interface
@@ -748,8 +901,10 @@
                     // Обновляем категории у подписок
                     function processGroup(index, groups, callback) {
                         let groupIds = Object.keys(groups) // Получаем массив ключей (ID групп) из объекта
-                        if (index < groupIds.length-1) { // здесь -1 для того чтобы пропустить массив order
-                            loadCategory(groupIds[index])
+                        if (index < groupIds.length) {
+                            if (groupIds[index] !== 'order') { // Пропускаем ключ 'order', если он есть
+                                loadCategory(groupIds[index]);
+                            }
                             setTimeout(() => processGroup(index + 1, groups, callback), 1000)
                         } else if (callback) {
                             callback() // Вызов callback после завершения всех итераций
@@ -777,13 +932,32 @@
                         }
                     }
 
+                    function disableNotifyProcessing() {
+                        const processingElement = document.getElementById('processing')
+                        if (processingElement) {
+                            // Применяем класс анимации
+                            processingElement.classList.add('animate__fadeOutUp')
+
+                            // Удаляем элемент после завершения анимации
+                            setTimeout(() => {
+                                processingElement.remove()
+                            }, 500) // Задержка должна соответствовать продолжительности анимации
+                        } else {
+                            console.log('Элемент с id="processing" не найден.')
+                        }
+                    }
+
                     // Сначала обрабатываем репосты, затем подписки
                     processReposts(0, responseData.reposts, function() {
-                        processGroup(0, responseData.subscriptions)
-                    });
+                        processGroup(0, responseData.subscriptions, function() {
+                            disableNotifyProcessing()
+                        })
+                    })
+
+
                 })
                 .catch(error => {
-                    console.error('Ошибка:', error);
+                    console.error('Ошибка:', error)
                     errorUserNotFound(profile_interface)
                 });
             }
@@ -792,10 +966,10 @@
             // ...
             function initializeTooltips() {
                 // Инициализируем tooltips только для новых элементов
-                const newTooltipTriggerList = [].slice.call(document.querySelectorAll('.new-tooltip'));
+                const newTooltipTriggerList = [].slice.call(document.querySelectorAll('.new-tooltip'))
                 newTooltipTriggerList.forEach(function (tooltipTriggerEl) {
-                    new bootstrap.Tooltip(tooltipTriggerEl);
-                    tooltipTriggerEl.classList.remove('new-tooltip'); // Удаляем класс, чтобы не инициализировать повторно
+                    new bootstrap.Tooltip(tooltipTriggerEl)
+                    tooltipTriggerEl.classList.remove('new-tooltip') // Удаляем класс, чтобы не инициализировать повторно
                 });
             }
 
@@ -875,7 +1049,7 @@
                 let responseData = data // Разбор JSON-ответа
                 const matchingGroups = findMatchingGroups(responseData.subscriptions, responseData.reposts)
 
-                let contentHTML = '<h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 5 минут</p>'
+                let contentHTML = '<div id="processing" class="animate__animated animate__fadeInDown"><h4 class="text-center pt-3"><div class="spinner-border" role="status"><span class="visually-hidden"></span></div> обновляю список рекомендаций...</h4><p class="small text-center pb-5">Подожди, анализ данных может занять до 5 минут</p></div>'
                 
                 contentHTML += '<div id="recommendations" class="d-flex flex-row flex-nowrap overflow-auto mb-5">'
                 contentHTML += '</div>'
@@ -885,6 +1059,11 @@
                 contentHTML += createListSection('Подписки', responseData.subscriptions, 'col-12 col-lg-4', matchingGroups)
                 contentHTML += createListSection('Репосты', responseData.reposts, 'col-12 col-lg-4', matchingGroups, false)
                 contentHTML += '</div>'
+
+                // Грязный хак! :) Чтобы доступиться до возраста пользователя в рассчётах.
+                // Скоро дедлайн :o
+                // ...
+                userInfo = responseData.user_info
 
                 profile.classList.remove("form-signin")
                 // Очищаем и добавляем новое содержимое в profile_interface
@@ -913,7 +1092,7 @@
                         },
                         maintainAspectRatio: false
                     }
-                });
+                })
                 
                 // Скрываем анимацию загрузки и показываем profile_interface
                 loading.style.display = 'none'
@@ -921,9 +1100,11 @@
 
                 // Обновляем категории у подписок
                 function processGroup(index, groups, callback) {
-                    let groupIds = Object.keys(groups); // Получаем массив ключей (ID групп) из объекта
-                    if (index < groupIds.length-1) { // здесь -1 для того чтобы пропустить массив order
-                        loadCategory(groupIds[index])
+                    let groupIds = Object.keys(groups) // Получаем массив ключей (ID групп) из объекта
+                    if (index < groupIds.length) {
+                        if (groupIds[index] !== 'order') { // Пропускаем ключ 'order', если он есть
+                            loadCategory(groupIds[index])
+                        }
                         setTimeout(() => processGroup(index + 1, groups, callback), 1000)
                     } else if (callback) {
                         callback() // Вызов callback после завершения всех итераций
@@ -951,29 +1132,45 @@
                     }
                 }
 
+                function disableNotifyProcessing() {
+                    const processingElement = document.getElementById('processing')
+                    if (processingElement) {
+                        // Применяем класс анимации
+                        processingElement.classList.add('animate__fadeOutUp')
+
+                        // Удаляем элемент после завершения анимации
+                        setTimeout(() => {
+                            processingElement.remove()
+                        }, 500); // Задержка должна соответствовать продолжительности анимации
+                    } else {
+                        console.log('Не могу убрать уведомление о процессе анализа, элемент не найден.');
+                    }
+                }
+
                 // Сначала обрабатываем репосты, затем подписки
                 processReposts(0, responseData.reposts, function() {
-                    processGroup(0, responseData.subscriptions)
-                });
+                    processGroup(0, responseData.subscriptions, function() {
+                        disableNotifyProcessing()
+                    })
+                })
 
 
             })
             .catch(error => {
                 console.error('Ошибка:', error)
                 errorUserNotFound(profile_interface)
-            });
-
-        });
+            })
+        })
 
         document.getElementById('addLoginForm').addEventListener('submit', function(event) {
             event.preventDefault() // Предотвращаем стандартное поведение формы
 
             // Программно "нажимаем" на кнопку
             document.getElementById('addLoginButton').click()
-        });
+        })
         document.getElementById('addLoginModal').addEventListener('shown.bs.modal', function () {
             document.getElementById('username_to_watch').focus()
-        });
+        })
         </script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         
